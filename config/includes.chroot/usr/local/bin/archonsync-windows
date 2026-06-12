@@ -1,0 +1,19 @@
+#!/bin/sh
+# Windows Mode: reboot straight into the installed Windows, once.
+# Requires GRUB_DEFAULT=saved (set in /etc/default/grub.d/40-archonsync.cfg).
+
+set -e
+
+fail() {
+    kdialog --error "$1" 2>/dev/null || notify-send "Windows Mode" "$1" || echo "$1" >&2
+    exit 1
+}
+
+[ -f /boot/grub/grub.cfg ] || \
+    fail "No GRUB bootloader found. Windows Mode works on an installed ArchonSync system, not the live session."
+
+entry=$(grep -oP "menuentry '\K[^']*Windows[^']*" /boot/grub/grub.cfg | head -1)
+[ -n "$entry" ] || \
+    fail "No Windows installation was found on the boot menu. If Windows is installed, run: sudo update-grub"
+
+pkexec sh -c "grub-reboot '$entry' && systemctl reboot"

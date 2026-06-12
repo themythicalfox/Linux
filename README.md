@@ -32,6 +32,19 @@ Ships as a hybrid BIOS/UEFI live ISO with a graphical installer.
   Edit the entries in the widget settings (JSON list of name/icon/cmd).
 - Minimal top bar with clock and system tray — no taskbar clutter
 
+**Windows Mode** (dual-boot)
+- "Windows Mode" on the Wheel reboots straight into your installed
+  Windows — one click, no boot-menu fiddling; next boot returns to
+  ArchonSync (GRUB one-shot via os-prober + `grub-reboot`)
+- Your Windows drive is auto-mounted at `/windows`, with `~/Windows`
+  and `~/Windows Files` (your Windows user profile) linked in your home
+  folder — same files on both systems
+- Account-based app sync does the rest across both OSes: Steam cloud
+  saves, VS Code Settings Sync, Firefox Sync
+- Setup warns you if Windows Fast Startup or BitLocker is blocking
+  drive access (with fix instructions). For full read-write access,
+  turn off Fast Startup in Windows once.
+
 **Performance**
 - Tuned for a high-RAM workstation: low swappiness, SteamOS-grade
   `vm.max_map_count`, high inotify limits for IDEs/engines

@@ -1,0 +1,34 @@
+#!/bin/sh
+# Per-login Windows Mode setup (runs from XDG autostart, as the user):
+# link the Windows drive and profile into the home folder, and warn
+# about Fast Startup / BitLocker when they block access.
+
+if mountpoint -q /windows; then
+    [ -e "$HOME/Windows" ] || ln -s /windows "$HOME/Windows"
+
+    # Link the first real Windows user profile.
+    if [ ! -e "$HOME/Windows Files" ] && [ -d /windows/Users ]; then
+        for u in /windows/Users/*; do
+            case "$(basename "$u")" in
+                Public|Default|Default\ User|defaultuser0|All\ Users) continue ;;
+            esac
+            if [ -d "$u/Documents" ] || [ -d "$u/Desktop" ]; then
+                ln -s "$u" "$HOME/Windows Files"
+                break
+            fi
+        done
+    fi
+
+    # Read-only because Windows hibernated / Fast Startup is on?
+    if ! touch /windows/.archonsync-rw-test 2>/dev/null; then
+        notify-send -i drive-harddisk "Windows drive is read-only" \
+            "Windows left the drive locked. In Windows: Control Panel → Power Options → 'Choose what the power buttons do' → turn OFF Fast Startup, then shut down fully."
+    else
+        rm -f /windows/.archonsync-rw-test
+    fi
+elif lsblk -no FSTYPE 2>/dev/null | grep -qi bitlocker; then
+    notify-send -i drive-harddisk "Windows drive is BitLocker-encrypted" \
+        "ArchonSync can't open it automatically. Unlock it in Dolphin with your BitLocker recovery key, or disable BitLocker in Windows."
+fi
+
+exit 0

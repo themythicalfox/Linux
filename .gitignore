@@ -2,6 +2,7 @@
 /.build/
 /cache/
 /chroot/
+/chroot.tmp/
 /chroot.files
 /chroot.packages.*
 /binary/
