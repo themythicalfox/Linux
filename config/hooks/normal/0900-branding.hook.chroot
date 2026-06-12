@@ -1,0 +1,23 @@
+#!/bin/sh
+# Rebrand the image as FoxLinux. /etc/os-release is a symlink to
+# /usr/lib/os-release owned by base-files, so write the real file.
+
+set -e
+
+DISTRO_NAME="FoxLinux"
+DISTRO_VERSION="1.0"
+
+cat > /usr/lib/os-release <<EOF
+PRETTY_NAME="${DISTRO_NAME} ${DISTRO_VERSION}"
+NAME="${DISTRO_NAME}"
+VERSION_ID="${DISTRO_VERSION}"
+VERSION="${DISTRO_VERSION}"
+ID=foxlinux
+ID_LIKE=debian
+HOME_URL="https://github.com/themythicalfox/Linux"
+SUPPORT_URL="https://github.com/themythicalfox/Linux/issues"
+EOF
+
+ln -sf ../usr/lib/os-release /etc/os-release
+
+echo "foxlinux" > /etc/hostname

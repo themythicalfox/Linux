@@ -1,0 +1,26 @@
+#!/bin/sh
+# Install the gaming stack. Runs as a hook (not a package list) because Steam
+# and 32-bit Wine need the i386 foreign architecture enabled first, and
+# package lists are installed before multiarch can be configured.
+
+set -e
+
+export DEBIAN_FRONTEND=noninteractive
+
+dpkg --add-architecture i386
+apt-get update
+
+# Debian's Steam license/EULA prompt must be pre-answered for a hands-free build.
+echo "steam steam/question select I AGREE" | debconf-set-selections
+echo "steam steam/license note" | debconf-set-selections
+
+apt-get install -y \
+    steam-installer \
+    steam-libs-i386:i386 \
+    wine \
+    wine64 \
+    wine32:i386 \
+    gamemode \
+    mangohud
+
+apt-get clean

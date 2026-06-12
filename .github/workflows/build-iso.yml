@@ -1,0 +1,41 @@
+name: Build FoxLinux ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+                      /usr/local/.ghcup /usr/local/share/boost \
+                      "$AGENT_TOOLSDIRECTORY" || true
+          sudo docker image prune --all --force || true
+          df -h /
+
+      - name: Install build dependencies
+        run: sudo scripts/install-deps.sh
+
+      - name: Build ISO
+        run: |
+          sudo lb config
+          sudo lb build
+
+      - name: Checksum
+        run: sha256sum *.iso > SHA256SUMS
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: foxlinux-iso
+          path: |
+            *.iso
+            SHA256SUMS
+          compression-level: 0
