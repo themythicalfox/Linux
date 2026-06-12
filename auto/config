@@ -22,7 +22,7 @@ lb config noauto \
     --iso-publisher "themythicalfox" \
     --image-name "${DISTRO_NAME}-${DISTRO_VERSION}" \
     --memtest none \
-    --firmware-chroot true \
-    --firmware-binary true \
+    --firmware-chroot false \
+    --firmware-binary false \
     --apt-recommends true \
     "${@}"
