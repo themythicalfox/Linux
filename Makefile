@@ -1,7 +1,7 @@
 # FoxLinux ISO build system. Run `make deps` once, then `make iso`.
 # Building requires root (live-build uses chroots).
 
-.PHONY: all deps config iso test clean distclean
+.PHONY: all deps config fetch iso test clean distclean
 
 all: iso
 
@@ -11,7 +11,10 @@ deps:
 config:
 	lb config
 
-iso: config
+fetch:
+	scripts/fetch-vscode.sh
+
+iso: config fetch
 	lb build
 
 test:

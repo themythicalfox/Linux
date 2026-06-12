@@ -26,6 +26,7 @@ jobs:
       - name: Build ISO
         run: |
           sudo lb config
+          sudo scripts/fetch-vscode.sh
           sudo lb build
 
       - name: Checksum
