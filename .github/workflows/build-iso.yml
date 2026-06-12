@@ -1,4 +1,4 @@
-name: Build FoxLinux ISO
+name: Build ArchonSync ISO
 
 on:
   workflow_dispatch:
@@ -34,7 +34,7 @@ jobs:
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: foxlinux-iso
+          name: archonsync-iso
           path: |
             *.iso
             SHA256SUMS

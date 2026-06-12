@@ -1,61 +1,90 @@
-# FoxLinux
+# ArchonSync
 
-A custom Linux distribution for PC gaming. Debian 13 ("trixie") base with
-KDE Plasma, Steam, Wine, NVIDIA drivers, GameMode, and MangoHud preinstalled,
-shipped as a hybrid BIOS/UEFI live ISO with a graphical installer (Calamares).
+A custom Linux OS for gaming and creation, built for speed and designed to
+look like nothing else. Debian 13 base, KDE Plasma desktop with a dark
+minimal theme (near-black surfaces, fox-orange accent), and the **Wheel** —
+a dot on the edge of the screen that expands into a scrollable radial
+launcher when you hover it.
 
-Windows apps run through Wine; Windows-only Steam games run through Proton,
-which the Steam client downloads on first launch.
+Ships as a hybrid BIOS/UEFI live ISO with a graphical installer.
+
+## What's inside
+
+**Gaming**
+- Steam (with 32-bit libraries and NVIDIA 32-bit GL/Vulkan for Proton)
+- Wine 10 (64-bit + 32-bit) for Windows apps
+- GameMode and MangoHud
+- NVIDIA proprietary driver, prebuilt for the shipped kernel
+
+**Creation**
+- Blender
+- Visual Studio Code
+- Unreal Engine: one-click guided installer (`archonsync-unreal`) with the
+  full C++ toolchain (clang, lld, cmake, ninja) already baked in — Epic's
+  license doesn't allow shipping the engine itself in an ISO
+- Git, build-essential, Vulkan tools
+
+**Design**
+- ArchonSync Dark color scheme and wallpaper, dark SDDM login, themed
+  lock screen
+- The Wheel launcher (custom Plasma widget): hover the orange dot on the
+  left edge, scroll to rotate through apps/commands, click to launch.
+  Edit the entries in the widget settings (JSON list of name/icon/cmd).
+- Minimal top bar with clock and system tray — no taskbar clutter
+
+**Performance**
+- Tuned for a high-RAM workstation: low swappiness, SteamOS-grade
+  `vm.max_map_count`, high inotify limits for IDEs/engines
+- power-profiles-daemon for one-click performance mode
 
 ## Getting the ISO
 
 **From GitHub Actions:** every push to `main` (or a manual run of the
-"Build FoxLinux ISO" workflow) builds the ISO and uploads it as the
-`foxlinux-iso` artifact on the workflow run page.
+"Build ArchonSync ISO" workflow) uploads the ISO as the `archonsync-iso`
+artifact on the workflow run page.
 
-**Building locally** (needs a Debian/Ubuntu host, root, ~20 GB free disk,
-60–120 min):
+**Building locally** (Debian/Ubuntu host, root, ~25 GB free disk):
 
 ```sh
 make deps   # install live-build and friends
-make iso    # produces FoxLinux-1.0-amd64.hybrid.iso
-make test   # optional: headless QEMU boot test of the ISO
+make iso    # produces ArchonSync-1.0-amd64.hybrid.iso
+make test   # optional: headless QEMU boot test
 ```
 
 ## Installing on your PC
 
-1. Flash the ISO to a USB stick (4 GB+): [Etcher](https://etcher.balena.io/),
-   [Ventoy](https://www.ventoy.net/), or `dd if=FoxLinux-*.iso of=/dev/sdX bs=4M status=progress`.
-2. Boot the PC from the USB stick (works on both UEFI and legacy BIOS;
-   disable Secure Boot if it refuses to boot — the NVIDIA driver is unsigned).
-3. Try the live session, then run **Install Debian** (Calamares) from the
-   desktop to install to disk.
+1. Flash the ISO to a USB stick (8 GB+): [Etcher](https://etcher.balena.io/),
+   [Ventoy](https://www.ventoy.net/), or `dd if=ArchonSync-*.iso of=/dev/sdX bs=4M status=progress`.
+2. Boot from the USB stick. **Disable Secure Boot** — the NVIDIA module is
+   unsigned.
+3. Try the live session, then run the installer from the menu to install
+   to disk.
 
 ## First steps after installing
 
-- **Steam:** launch Steam from the menu — it downloads its runtime on first
-  run. For Windows-only games, enable Proton: *Steam → Settings →
-  Compatibility → Enable Steam Play for all other titles*.
-- **Windows apps:** `wine setup.exe` (or right-click → Open with Wine).
-- **Performance:** launch games with `gamemoderun %command%` and overlay
-  stats with `mangohud %command%` in Steam launch options.
+- **Steam:** first launch downloads its runtime. For Windows-only games
+  enable Proton: *Steam → Settings → Compatibility → Enable Steam Play
+  for all other titles*.
+- **Unreal Engine:** open "Unreal Engine" from the Wheel or app menu — it
+  walks you through pulling the native Linux build with your Epic account.
+- **Windows apps:** `wine setup.exe` or right-click → Open with Wine.
+- **Game performance:** add `gamemoderun %command%` (and `mangohud %command%`
+  for an FPS overlay) to a game's Steam launch options.
 
-## Layout
+## Repo layout
 
-- `auto/config` — live-build configuration (distro name, Debian release,
-  archive areas, boot options). Change branding here and in
-  `config/hooks/normal/0900-branding.hook.chroot`.
-- `config/package-lists/` — packages baked into the image (desktop, NVIDIA,
-  installer).
-- `config/hooks/normal/0500-gaming.hook.chroot` — enables i386 multiarch and
-  installs Steam/Wine/GameMode/MangoHud (must run after multiarch, so it's a
-  hook rather than a package list).
-- `scripts/` — host dependency setup and the QEMU boot test.
-- `.github/workflows/build-iso.yml` — CI ISO build.
+- `auto/config` — live-build configuration (name, Debian release, boot options)
+- `config/package-lists/` — what gets baked into the image
+- `config/hooks/normal/` — build hooks: gaming stack (needs i386 multiarch
+  first), VS Code (not in Debian), branding/Calamares rebrand
+- `config/includes.chroot/` — files shipped verbatim: theme, wallpaper,
+  Wheel widget, skel desktop layout, sysctl tuning, Unreal helper
+- `scripts/` — host dependency setup and the QEMU boot test
+- `.github/workflows/build-iso.yml` — CI ISO build
 
 ## Roadmap
 
-- Custom Plasma theming, wallpaper, and "Install FoxLinux" branding in Calamares
+- Plymouth boot splash and themed GRUB menu
 - Lutris / Heroic Games Launcher
-- Automatic NVIDIA-vs-Mesa hardware detection so one ISO fits any GPU
-- Signed ISO releases attached to GitHub Releases
+- NVIDIA-vs-Mesa hardware auto-detection so one ISO fits any GPU
+- Signed release ISOs attached to GitHub Releases

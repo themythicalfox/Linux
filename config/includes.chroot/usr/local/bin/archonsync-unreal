@@ -1,0 +1,60 @@
+#!/bin/sh
+# Unreal Engine helper for ArchonSync.
+#
+# Epic's license doesn't allow redistributing Unreal Engine in the ISO,
+# so this launches the engine if it's installed and otherwise walks
+# through installing the native Linux build. All build dependencies
+# (clang, lld, cmake, ninja) are already part of ArchonSync.
+
+set -e
+
+UE_DIR="$HOME/UnrealEngine"
+UE_EDITOR="$UE_DIR/Engine/Binaries/Linux/UnrealEditor"
+UE_URL="https://www.unrealengine.com/en-US/linux"
+
+if [ -x "$UE_EDITOR" ]; then
+    exec "$UE_EDITOR" "$@"
+fi
+
+# Not installed yet: run the guided install in a terminal if we weren't
+# started from one.
+if [ ! -t 0 ] && [ -z "$ARCHONSYNC_UNREAL_TERM" ]; then
+    ARCHONSYNC_UNREAL_TERM=1 export ARCHONSYNC_UNREAL_TERM
+    exec konsole -e "$0"
+fi
+
+cat <<EOF
+
+  ArchonSync — Unreal Engine setup
+  --------------------------------
+  1. A browser will open on Epic's Linux page: $UE_URL
+  2. Sign in with your Epic account and download the latest
+     "Linux" prebuilt engine archive (.zip).
+  3. Come back here and enter the path to the downloaded file.
+
+EOF
+
+xdg-open "$UE_URL" >/dev/null 2>&1 || true
+
+printf "Path to the downloaded Unreal Engine .zip (e.g. ~/Downloads/Linux_Unreal_Engine_*.zip): "
+read -r ZIP
+ZIP=$(eval echo "$ZIP")
+
+if [ ! -f "$ZIP" ]; then
+    echo "File not found: $ZIP" >&2
+    exit 1
+fi
+
+echo "Extracting to $UE_DIR (this is large; it can take a while)..."
+mkdir -p "$UE_DIR"
+bsdtar -xf "$ZIP" -C "$UE_DIR" --strip-components 1 2>/dev/null || \
+    unzip -q "$ZIP" -d "$UE_DIR"
+
+if [ -x "$UE_EDITOR" ]; then
+    echo "Done. Launching Unreal Editor..."
+    exec "$UE_EDITOR"
+else
+    echo "Extracted, but UnrealEditor was not found at $UE_EDITOR." >&2
+    echo "Check the archive layout under $UE_DIR." >&2
+    exit 1
+fi

@@ -1,0 +1,8 @@
+{
+    "KPlugin": {
+        "Id": "ArchonSync",
+        "Name": "ArchonSync",
+        "License": "CC-BY-SA-4.0",
+        "Authors": [{ "Name": "themythicalfox" }]
+    }
+}

@@ -38,7 +38,7 @@ timeout "$TIMEOUT" qemu-system-x86_64 \
 QEMU_PID=$!
 
 while kill -0 "$QEMU_PID" 2>/dev/null; do
-    if grep -qE "Reached target.*(Graphical|Multi-User)|foxlinux login:" "$LOG" 2>/dev/null; then
+    if grep -qE "Reached target.*(Graphical|Multi-User)|archonsync login:" "$LOG" 2>/dev/null; then
         echo "PASS: live system booted."
         kill "$QEMU_PID" 2>/dev/null || true
         wait "$QEMU_PID" 2>/dev/null || true

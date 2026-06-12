@@ -14,9 +14,12 @@ apt-get update
 echo "steam steam/question select I AGREE" | debconf-set-selections
 echo "steam steam/license note" | debconf-set-selections
 
+# nvidia-driver-libs:i386 provides the 32-bit GL/Vulkan stack many
+# Windows games need under Proton/Wine on NVIDIA.
 apt-get install -y \
     steam-installer \
     steam-libs-i386:i386 \
+    nvidia-driver-libs:i386 \
     wine \
     wine64 \
     wine32:i386 \

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Install Visual Studio Code from Microsoft's stable .deb channel.
+# Not available in Debian's archive, so it can't go in a package list.
+
+set -e
+
+export DEBIAN_FRONTEND=noninteractive
+
+curl -fsSL -o /tmp/code.deb \
+    "https://update.code.visualstudio.com/latest/linux-deb-x64/stable"
+apt-get install -y /tmp/code.deb
+rm -f /tmp/code.deb
+apt-get clean
