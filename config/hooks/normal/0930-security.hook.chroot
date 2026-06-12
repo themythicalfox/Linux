@@ -1,0 +1,12 @@
+#!/bin/sh
+# Arm the security stack. `ufw enable` can't run in a chroot (no kernel
+# netfilter), so flip the config it would have written; the firewall
+# comes up with the boot service. Default policy: deny incoming,
+# allow outgoing.
+
+set -e
+
+sed -i 's/^ENABLED=no/ENABLED=yes/' /etc/ufw/ufw.conf
+systemctl enable ufw.service
+systemctl enable apparmor.service
+systemctl enable unattended-upgrades.service

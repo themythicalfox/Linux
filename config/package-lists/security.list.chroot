@@ -1,0 +1,5 @@
+# Security hardening stack.
+ufw
+apparmor
+apparmor-utils
+unattended-upgrades
