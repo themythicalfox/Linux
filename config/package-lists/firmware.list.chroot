@@ -1,0 +1,11 @@
+# Explicit firmware selection. We avoid live-build's --firmware-chroot
+# because it pulls in firmware-b43-installer, whose postinst downloads
+# from the network and breaks offline/proxied builds.
+firmware-linux
+firmware-misc-nonfree
+firmware-realtek
+firmware-iwlwifi
+firmware-atheros
+firmware-sof-signed
+intel-microcode
+amd64-microcode

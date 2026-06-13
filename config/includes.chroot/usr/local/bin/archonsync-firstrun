@@ -1,0 +1,40 @@
+#!/bin/sh
+# Apply the ArchonSync desktop on first login of each user.
+#
+# Shipping these as /etc/skel config files is unreliable: Plasma 6
+# regenerates a default panel layout when the containment/activity IDs
+# in a hand-written appletsrc don't match, so the custom layout, theme,
+# and wallpaper get dropped. Instead we apply them through Plasma's own
+# tools and scripting API, once, guarded by a stamp file.
+
+set -e
+
+STAMP="$HOME/.config/archonsync-firstrun.done"
+[ -f "$STAMP" ] && exit 0
+
+WALL=/usr/share/wallpapers/ArchonSync/contents/images/3840x2160.png
+LAYOUT=/usr/share/archonsync/layout.js
+
+# Plasma 6 ships qdbus6; older systems have qdbus.
+QDBUS=$(command -v qdbus6 || command -v qdbus || echo qdbus)
+
+# Wait for plasmashell to own its D-Bus service before scripting it.
+i=0
+while [ $i -lt 30 ]; do
+    if "$QDBUS" org.kde.plasmashell >/dev/null 2>&1; then
+        break
+    fi
+    i=$((i + 1))
+    sleep 1
+done
+
+plasma-apply-colorscheme ArchonSyncDark >/dev/null 2>&1 || true
+plasma-apply-wallpaperimage "$WALL" >/dev/null 2>&1 || true
+
+if [ -f "$LAYOUT" ]; then
+    "$QDBUS" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+        "$(cat "$LAYOUT")" >/dev/null 2>&1 || true
+fi
+
+mkdir -p "$(dirname "$STAMP")"
+touch "$STAMP"

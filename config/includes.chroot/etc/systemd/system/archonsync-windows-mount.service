@@ -1,0 +1,11 @@
+[Unit]
+Description=Mount Windows system partition at /windows
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/archonsync-mount-windows
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

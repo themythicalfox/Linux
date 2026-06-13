@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Windows Mode Setup
+Exec=archonsync-windows-setup
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2

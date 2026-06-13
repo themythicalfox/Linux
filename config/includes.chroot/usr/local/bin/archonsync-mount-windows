@@ -1,0 +1,26 @@
+#!/bin/sh
+# Mount the Windows system partition at /windows (boot-time, run as root).
+#
+# Tries read-write first; ntfs-3g safely refuses volumes left dirty or
+# hibernated by Windows (Fast Startup), in which case we fall back to
+# read-only so files are still reachable.
+
+set -e
+
+mkdir -p /windows
+mountpoint -q /windows && exit 0
+
+for dev in $(blkid -t TYPE=ntfs -o device 2>/dev/null); do
+    if mount -t ntfs-3g -o ro "$dev" /windows 2>/dev/null; then
+        if [ -d /windows/Windows ]; then
+            umount /windows
+            mount -t ntfs-3g -o windows_names,umask=000 "$dev" /windows 2>/dev/null \
+                || mount -t ntfs-3g -o ro "$dev" /windows \
+                || true
+            exit 0
+        fi
+        umount /windows
+    fi
+done
+
+exit 0

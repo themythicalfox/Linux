@@ -1,0 +1,20 @@
+# Creative / development workstation stack.
+# VS Code is installed by config/hooks/normal/0510-vscode.hook.chroot
+# (fetched from Microsoft's download channel; not in Debian).
+blender
+git
+curl
+ca-certificates
+build-essential
+clang
+lld
+lldb
+cmake
+ninja-build
+python3
+python3-pip
+vulkan-tools
+mesa-utils
+power-profiles-daemon
+libarchive-tools
+unzip

@@ -1,0 +1,4 @@
+# Windows Mode: dual-boot detection, NTFS access, desktop notifications.
+os-prober
+ntfs-3g
+libnotify-bin

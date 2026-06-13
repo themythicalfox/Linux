@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="entries" type="String">
+      <label>JSON list of wheel entries: [{name, icon, cmd}, ...]</label>
+      <default>[{"name":"Steam","icon":"steam","cmd":"steam"},{"name":"VS Code","icon":"vscode","cmd":"code"},{"name":"Blender","icon":"blender","cmd":"blender"},{"name":"Unreal Engine","icon":"applications-development","cmd":"archonsync-unreal"},{"name":"Firefox","icon":"firefox-esr","cmd":"firefox"},{"name":"Files","icon":"system-file-manager","cmd":"dolphin"},{"name":"Terminal","icon":"utilities-terminal","cmd":"konsole"},{"name":"Windows Mode","icon":"computer","cmd":"archonsync-windows"},{"name":"Settings","icon":"systemsettings","cmd":"systemsettings"},{"name":"Screenshot","icon":"spectacle","cmd":"spectacle"},{"name":"Lock","icon":"system-lock-screen","cmd":"loginctl lock-session"}]</default>
+    </entry>
+    <entry name="wheelSize" type="Int">
+      <label>Diameter of the expanded wheel in pixels</label>
+      <default>380</default>
+    </entry>
+  </group>
+</kcfg>

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync First-Run Setup
+Exec=archonsync-firstrun
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true

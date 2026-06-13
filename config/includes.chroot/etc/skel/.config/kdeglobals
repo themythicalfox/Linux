@@ -1,0 +1,11 @@
+[General]
+ColorScheme=ArchonSyncDark
+AccentColor=255,122,26
+
+[Icons]
+Theme=breeze-dark
+
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+SingleClick=false
+widgetStyle=Breeze

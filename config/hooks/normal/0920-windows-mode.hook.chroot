@@ -1,0 +1,6 @@
+#!/bin/sh
+# Enable the boot-time Windows partition mount.
+
+set -e
+
+systemctl enable archonsync-windows-mount.service

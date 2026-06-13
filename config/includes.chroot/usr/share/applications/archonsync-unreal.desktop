@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Unreal Engine
+Comment=Launch Unreal Engine (guided install on first run)
+Exec=archonsync-unreal
+Icon=applications-development
+Terminal=false
+Categories=Development;Graphics;

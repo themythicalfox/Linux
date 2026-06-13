@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "themythicalfox" }],
+        "Category": "Application Launchers",
+        "Description": "A dot at the screen edge that expands into a scrollable wheel of apps and commands",
+        "Icon": "applications-all",
+        "Id": "org.archonsync.wheel",
+        "License": "GPL-3.0+",
+        "Name": "ArchonSync Wheel",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
