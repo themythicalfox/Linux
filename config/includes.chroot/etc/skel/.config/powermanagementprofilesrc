@@ -1,0 +1,11 @@
+[AC][DPMSControl]
+idleTime=6000
+lockBeforeTurnOff=0
+
+[AC][DimDisplay]
+idleTime=6000000
+
+[AC][SuspendSession]
+idleTime=6000000
+suspendThenHibernate=false
+suspendType=0
