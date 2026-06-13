@@ -9,6 +9,7 @@ set -e
 
 # live-build silently ignores local packages not named *_$arch.deb or *_all.deb
 DEST="$(dirname "$0")/../config/packages.chroot/code_amd64.deb"
+mkdir -p "$(dirname "$DEST")"
 
 if [ -f "$DEST" ]; then
     echo "VS Code package already present: $DEST"
