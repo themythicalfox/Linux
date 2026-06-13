@@ -30,3 +30,4 @@ SHA256SUMS
 /config/package-lists/live.list.chroot
 chroot.installed_tmp_pkgs
 /config/packages.chroot/*.deb
+/.preview/
