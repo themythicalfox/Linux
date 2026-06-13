@@ -3,7 +3,7 @@ name: Build ArchonSync ISO
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, claude/linux-platform-coding-x4qkt9]
 
 jobs:
   build:
