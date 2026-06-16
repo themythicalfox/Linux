@@ -27,6 +27,7 @@ jobs:
         run: |
           sudo lb config
           sudo scripts/fetch-vscode.sh
+          sudo scripts/build-desktop.sh
           sudo lb build
 
       - name: Checksum
