@@ -1,0 +1,12 @@
+[package]
+name = "archon-theme"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Color-science theming engine: extracts a palette from the wallpaper and derives an ArchonSync theme that complements it."
+
+[dependencies]
+serde = { workspace = true }
+image = { workspace = true }
+thiserror = { workspace = true }

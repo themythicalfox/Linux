@@ -1,0 +1,12 @@
+[package]
+name = "archon-ipc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Length-prefixed unix-socket protocol the ArchonSync compositor uses to talk to the shell and the archonctl CLI."
+
+[dependencies]
+serde = { workspace = true }
+bincode = { workspace = true }
+thiserror = { workspace = true }

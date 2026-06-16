@@ -1,0 +1,12 @@
+[package]
+name = "archon-config"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Configuration, keybindings and persisted desktop layout for ArchonSync, stored as TOML under ~/.config/archonsync."
+
+[dependencies]
+serde = { workspace = true }
+toml = { workspace = true }
+thiserror = { workspace = true }
