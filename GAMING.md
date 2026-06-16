@@ -60,6 +60,12 @@ HDR works on KDE Plasma (Wayland session, the default). Turn it on per display:
 *System Settings → Display & Monitor → enable HDR.* For HDR inside a game, launch
 it with `archonsync-game-launch %command%` (uses `gamescope --hdr-enabled`).
 
+> Note: `gamescope` is installed when the Debian release provides it. If your
+> ISO shipped without it (it's currently only in Debian backports), per-display
+> HDR in KDE still works, and you can add gamescope later with
+> `sudo apt install -t trixie-backports gamescope`. The launch wrapper detects
+> gamescope automatically and just skips it if it's missing.
+
 ## GPU notes
 
 - **NVIDIA:** proprietary driver ships in the ISO; DRM modeset is enabled

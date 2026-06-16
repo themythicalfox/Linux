@@ -14,14 +14,11 @@ apt-get update
 echo "steam steam/question select I AGREE" | debconf-set-selections
 echo "steam steam/license note" | debconf-set-selections
 
-# nvidia-driver-libs:i386 provides the 32-bit GL/Vulkan stack many
-# Windows games need under Proton/Wine on NVIDIA. gamescope gives an isolated,
-# HDR-capable game session with FSR upscaling; winetricks/Wine cover non-Steam
-# Windows apps; default-jre is for Minecraft (Prism Launcher).
-# 32-bit Mesa (mesa-vulkan-drivers:i386 etc.) lives here, not in a package
-# list, because :i386 packages need the i386 architecture enabled first —
-# which only happens above. This is what gives AMD/Intel GPUs a working 32-bit
-# GL/Vulkan stack for Proton/Wine, mirroring nvidia-driver-libs:i386 for NVIDIA.
+# Core gaming stack — must install. nvidia-driver-libs:i386 + the 32-bit Mesa
+# give NVIDIA *and* AMD/Intel a working 32-bit GL/Vulkan stack for Proton/Wine;
+# these :i386 packages live here (not in a package list) because they need the
+# i386 architecture enabled first, which only happens above. default-jre is for
+# Minecraft (Prism Launcher).
 apt-get install -y \
     steam-installer \
     steam-libs-i386:i386 \
@@ -32,12 +29,18 @@ apt-get install -y \
     wine \
     wine64 \
     wine32:i386 \
-    winetricks \
-    gamescope \
     gamemode \
     mangohud \
-    mangohud:i386 \
-    goverlay \
     default-jre
+
+# Nice-to-have extras — installed best-effort so a package that isn't in the
+# current Debian release (e.g. gamescope, which is only in backports/sid right
+# now) can't fail the whole image build. gamescope gives HDR/FSR game sessions;
+# archonsync-game-launch already degrades gracefully if it's absent. goverlay is
+# the MangoHud GUI; winetricks helps non-Steam Windows apps; mangohud:i386 adds
+# the overlay to 32-bit games.
+for pkg in winetricks gamescope goverlay mangohud:i386; do
+    apt-get install -y "$pkg" || echo "gaming hook: optional package '$pkg' unavailable in this release, skipping"
+done
 
 apt-get clean
