@@ -1,0 +1,48 @@
+{
+  "policies": {
+    "_comment": "ArchonSync hardened Firefox defaults: block trackers/crypto-miners/fingerprinters, encrypt DNS, and turn off all telemetry. Users can still change most of these in Settings.",
+
+    "EnableTrackingProtection": {
+      "Value": true,
+      "Locked": false,
+      "Cryptomining": true,
+      "Fingerprinting": true,
+      "EmailTracking": true
+    },
+    "Cookies": {
+      "Behavior": "reject-tracker-and-partition-foreign"
+    },
+    "DNSOverHTTPS": {
+      "Enabled": true,
+      "ProviderURL": "https://dns.quad9.net/dns-query",
+      "Locked": false
+    },
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisableFormHistory": true,
+    "DontCheckDefaultBrowser": true,
+    "FirefoxHome": {
+      "SponsoredTopSites": false,
+      "SponsoredPocket": false,
+      "Pocket": false
+    },
+    "UserMessaging": {
+      "ExtensionRecommendations": false,
+      "FeatureRecommendations": false,
+      "SkipOnboarding": true
+    },
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "PromptForDownloadLocation": true,
+    "NetworkPrediction": false,
+    "SearchSuggestEnabled": false,
+    "Preferences": {
+      "privacy.globalprivacycontrol.enabled": { "Value": true, "Status": "default" },
+      "privacy.donottrackheader.enabled": { "Value": true, "Status": "default" },
+      "privacy.trackingprotection.enabled": { "Value": true, "Status": "default" },
+      "beacon.enabled": { "Value": false, "Status": "default" },
+      "browser.send_pings": { "Value": false, "Status": "locked" }
+    }
+  }
+}

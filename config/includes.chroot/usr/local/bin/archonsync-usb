@@ -1,0 +1,40 @@
+#!/bin/sh
+# Friendly wrapper around USBGuard so allowing a newly plugged-in device is one
+# command instead of remembering usbguard's syntax.
+#
+#   archonsync-usb list            # show devices and whether they're allowed
+#   archonsync-usb allow <id>      # allow a device for this session
+#   archonsync-usb allow-forever <id>   # allow and remember it permanently
+#   archonsync-usb block <id>      # block a device
+
+set -eu
+
+if ! command -v usbguard >/dev/null 2>&1; then
+    echo "USBGuard isn't installed." >&2
+    exit 1
+fi
+
+cmd="${1:-list}"
+case "$cmd" in
+    list|ls)
+        usbguard list-devices
+        ;;
+    allow)
+        [ $# -ge 2 ] || { echo "usage: archonsync-usb allow <id>" >&2; exit 1; }
+        sudo usbguard allow-device "$2"
+        echo "Allowed device $2 for this session."
+        ;;
+    allow-forever)
+        [ $# -ge 2 ] || { echo "usage: archonsync-usb allow-forever <id>" >&2; exit 1; }
+        sudo usbguard allow-device -p "$2"
+        echo "Allowed device $2 permanently."
+        ;;
+    block)
+        [ $# -ge 2 ] || { echo "usage: archonsync-usb block <id>" >&2; exit 1; }
+        sudo usbguard block-device "$2"
+        ;;
+    *)
+        echo "usage: archonsync-usb {list|allow <id>|allow-forever <id>|block <id>}" >&2
+        exit 1
+        ;;
+esac

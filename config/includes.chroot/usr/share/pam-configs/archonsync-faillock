@@ -1,0 +1,15 @@
+Name: ArchonSync brute-force login lockout (pam_faillock)
+# Shipped but OFF by default: a misconfigured faillock can lock you out of a
+# fresh install, and console brute-force is a low threat on a single-user
+# desktop. Turn it on deliberately with:  sudo pam-auth-update  (tick this
+# entry), then it enforces /etc/security/faillock.conf.
+Default: no
+Priority: 1024
+Auth-Type: Primary
+Auth:
+	[success=1 default=ignore] pam_faillock.so preauth
+	[default=die] pam_faillock.so authfail
+	sufficient pam_faillock.so authsucc
+Account-Type: Primary
+Account:
+	required pam_faillock.so

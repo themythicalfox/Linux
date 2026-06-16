@@ -1,0 +1,16 @@
+[Unit]
+Description=Update ArchonSync DNS ad/tracker/malware blocklist
+After=network-online.target systemd-resolved.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/archonsync-blocklist-update
+# Run-time sandbox for the updater itself.
+ProtectSystem=strict
+ReadWritePaths=/etc/hosts
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=

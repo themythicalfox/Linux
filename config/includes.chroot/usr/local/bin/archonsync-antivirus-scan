@@ -1,0 +1,60 @@
+#!/bin/sh
+# ArchonSync weekly malware sweep.
+#
+# Updates ClamAV signatures, scans the places malware actually lands (home
+# dirs, /tmp, /var/tmp, downloads), quarantines anything infected, and runs a
+# rootkit check. Findings are logged to the journal and dropped as a desktop
+# notification for every logged-in user. On-access real-time scanning is handled
+# separately by clamav-daemon; this is the deep periodic sweep.
+
+set -u
+
+QUARANTINE=/var/lib/archonsync/quarantine
+LOG=/var/log/archonsync-av.log
+mkdir -p "$QUARANTINE"
+chmod 700 "$QUARANTINE"
+
+notify_all() {
+    msg="$1"
+    for bus in /run/user/*; do
+        uid="${bus#/run/user/}"
+        [ -S "$bus/bus" ] || continue
+        user="$(id -nu "$uid" 2>/dev/null)" || continue
+        su - "$user" -c "DBUS_SESSION_BUS_ADDRESS=unix:path=$bus/bus \
+            notify-send -u critical 'ArchonSync Security' '$msg'" 2>/dev/null || true
+    done
+}
+
+echo "=== ArchonSync AV scan $(date -u +%FT%TZ) ===" >> "$LOG"
+
+# Refresh signatures (freshclam may already run as a daemon; this is a backstop).
+if command -v freshclam >/dev/null 2>&1; then
+    freshclam --quiet >> "$LOG" 2>&1 || echo "freshclam: update failed (offline?)" >> "$LOG"
+fi
+
+# Deep scan: infected files are moved to quarantine, not deleted, so you can
+# inspect a false positive. Skip the quarantine itself and pseudo-filesystems.
+INFECTED=0
+if command -v clamscan >/dev/null 2>&1; then
+    clamscan -r -i --no-summary \
+        --exclude-dir="^$QUARANTINE" \
+        --exclude-dir="^/sys" --exclude-dir="^/proc" --exclude-dir="^/dev" \
+        --move="$QUARANTINE" \
+        /home /root /tmp /var/tmp /srv >> "$LOG" 2>&1
+    rc=$?
+    # clamscan exit 1 = virus found, 2 = error.
+    [ "$rc" -eq 1 ] && INFECTED=1
+fi
+
+# Rootkit check (signature + heuristic).
+if command -v rkhunter >/dev/null 2>&1; then
+    rkhunter --update --quiet >> "$LOG" 2>&1 || true
+    rkhunter --check --skip-keypress --report-warnings-only >> "$LOG" 2>&1 || true
+fi
+
+if [ "$INFECTED" -eq 1 ]; then
+    echo "MALWARE FOUND — files moved to $QUARANTINE" >> "$LOG"
+    notify_all "Malware detected and quarantined. See $LOG."
+else
+    echo "scan clean." >> "$LOG"
+fi
