@@ -133,6 +133,72 @@ make iso    # produces ArchonSync-1.0-amd64.hybrid.iso
 make test   # optional: headless QEMU boot test
 ```
 
+## For Oliver — run it in a VM on your Intel MacBook
+
+Hi Oliver! This is a safe way to try ArchonSync — it runs inside a window on your
+Mac and can't touch your real macOS or files. Follow these in order.
+
+### Step 1 — get the ISO file
+
+The ISO is the disk image you'll boot the VM from. You don't build anything —
+it's already built for you.
+
+**Easiest:** ask your brother to send you the file
+`ArchonSync-1.0-amd64.hybrid.iso` (it's about 3.8 GB — Google Drive, WeTransfer
+or a USB stick all work). Save it somewhere easy like your **Downloads** folder.
+
+**Or download it yourself** (needs a GitHub account with access to the repo):
+1. Open the repo on GitHub and click the **Actions** tab.
+2. Click the **"Build ArchonSync ISO"** workflow, then the newest run with a
+   green ✓ (currently:
+   `https://github.com/themythicalfox/Linux/actions/runs/27635265291`).
+3. Scroll to the **Artifacts** section at the bottom and click **`archonsync-iso`**.
+   It downloads a file called `archonsync-iso.zip`.
+4. **Double-click the `.zip`** in Finder — it unpacks into the actual
+   `ArchonSync-1.0-amd64.hybrid.iso` file. That `.iso` is what you'll use.
+
+### Step 2 — install VMware Fusion (free)
+
+1. Go to **https://www.vmware.com/products/fusion** (it's free for personal use;
+   you'll make a free Broadcom account to download it).
+2. Download **VMware Fusion (Pro)** for Mac, open the `.dmg`, and drag it to
+   Applications like any other app.
+
+> Prefer something with no account sign-up? **VirtualBox**
+> (https://www.virtualbox.org → "OS X / Intel hosts") works too — the VM
+> settings below are the same. Use VirtualBox only on your **Intel** Mac.
+
+### Step 3 — create the VM and load the ISO
+
+1. Open **VMware Fusion** → **File → New…**
+2. Choose **"Install from a disc or image"**, then **drag in the
+   `ArchonSync-1.0-amd64.hybrid.iso`** file → **Continue**.
+3. If it asks for the operating system, pick **Linux → Debian 12.x 64-bit** →
+   **Continue**.
+4. Click **Customize Settings**, save the VM, then set:
+   - **Processors & Memory:** 4 processor cores, **8 GB (8192 MB)** memory.
+   - **Hard Disk:** 40 GB or more.
+   - **Advanced → Firmware type: UEFI** (not Legacy BIOS). Leave **Secure Boot
+     off**.
+   - **Display:** turn on **Accelerate 3D Graphics** for a smoother desktop.
+
+### Step 4 — start it
+
+1. Click the **▶ (Play)** button to power on the VM.
+2. At the ArchonSync boot menu, choose **Live** to try the desktop without
+   changing anything. (You can also run the installer to install it *inside the
+   VM's virtual disk* — that's still completely separate from your real Mac.)
+3. Look around: the orange **Wheel** on the left edge launches apps, and the
+   **Control Center** has Settings, Task Manager, and the layout switcher.
+
+### Good to know
+
+- A VM is great for seeing the desktop, the apps, and the design — but **games
+  run poorly inside a VM** (no real GPU). For actual gaming, ArchonSync needs to
+  be installed on a real PC.
+- If the VM won't boot, double-check **Firmware type = UEFI** in Step 3.
+- To shut down: just close the VM window and choose **Power Off**.
+
 ## Running ArchonSync in a virtual machine (try it safely first)
 
 A VM is the no-risk way to try ArchonSync — it can't touch your real OS or
