@@ -27,6 +27,26 @@ $SUDO apt-get install -y \
     ca-certificates \
     curl
 
+# Toolchain + dev libraries for building the ArchonSync Rust desktop
+# (scripts/build-desktop.sh). The desktop is compiled on the host and only its
+# release binaries are staged into the image, so these are host build deps. If
+# they can't be installed, the ISO still ships the feature-light desktop core.
+$SUDO apt-get install -y \
+    cargo \
+    rustc \
+    pkg-config \
+    libwayland-dev \
+    libinput-dev \
+    libudev-dev \
+    libseat-dev \
+    libgbm-dev \
+    libdrm-dev \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev \
+    libxkbcommon-dev \
+    libpam0g-dev \
+    || echo "install-deps: desktop build deps unavailable; shipping feature-light desktop."
+
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 curl -fsSL -o "$tmpdir/live-build.deb" "$DEBIAN_MIRROR/$LIVE_BUILD_DEB"

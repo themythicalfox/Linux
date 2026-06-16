@@ -6,7 +6,7 @@
 # automatically and falls through to `make docker-iso`, which builds
 # inside a privileged Debian container where those restrictions don't apply.
 
-.PHONY: all deps config fetch iso docker-iso test clean distclean
+.PHONY: all deps config fetch desktop iso docker-iso test clean distclean
 
 all: iso
 
@@ -19,7 +19,12 @@ config:
 fetch:
 	scripts/fetch-vscode.sh
 
-iso: fetch
+# Build the ArchonSync Rust desktop and stage its binaries/assets into the
+# chroot tree. Separate target so it can be run (and debugged) on its own.
+desktop:
+	scripts/build-desktop.sh
+
+iso: fetch desktop
 	@if [ "$$CODESPACES" = "true" ]; then \
 	    echo "==> GitHub Codespaces detected — routing to docker-iso to bypass noexec."; \
 	    $(MAKE) docker-iso; \
@@ -28,7 +33,7 @@ iso: fetch
 	    lb build; \
 	fi
 
-docker-iso: fetch
+docker-iso: fetch desktop
 	scripts/build-docker.sh
 
 test:
