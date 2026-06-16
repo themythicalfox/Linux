@@ -133,71 +133,101 @@ make iso    # produces ArchonSync-1.0-amd64.hybrid.iso
 make test   # optional: headless QEMU boot test
 ```
 
-## For Oliver — run it in a VM on your Intel MacBook
+## For Oliver — build it from the repo and run it in a VM (Intel MacBook)
 
-Hi Oliver! This is a safe way to try ArchonSync — it runs inside a window on your
-Mac and can't touch your real macOS or files. Follow these in order.
+Hi Oliver! Goal here is just to **look at the desktop and make sure the UI works**
+— don't worry about games or speed, those need a real PC and won't be good in a
+VM anyway. You'll build the ISO from the repo, download it, and boot it in a VM
+on your Mac. The whole thing is safe — the VM can't touch your real Mac or files.
 
-### Step 1 — get the ISO file
+> **Important:** you can't build this directly on macOS — a Debian ISO has to be
+> built on Linux. So we build it in the cloud using **GitHub Codespaces** (which
+> is just VS Code in your browser), then download the finished `.iso`. No Linux
+> machine needed on your end.
 
-The ISO is the disk image you'll boot the VM from. You don't build anything —
-it's already built for you.
+> **Shortcut:** if you'd rather skip building, the ISO is already built for you —
+> go to the repo's **Actions** tab → newest green **"Build ArchonSync ISO"** run
+> → **Artifacts** → download **`archonsync-iso`** (a `.zip`; double-click it in
+> Finder to get the `.iso`). Then jump to Step 4. Otherwise, build it yourself:
 
-**Easiest:** ask your brother to send you the file
-`ArchonSync-1.0-amd64.hybrid.iso` (it's about 3.8 GB — Google Drive, WeTransfer
-or a USB stick all work). Save it somewhere easy like your **Downloads** folder.
+### Step 1 — open the repo in a Codespace (VS Code in the cloud)
 
-**Or download it yourself** (needs a GitHub account with access to the repo):
-1. Open the repo on GitHub and click the **Actions** tab.
-2. Click the **"Build ArchonSync ISO"** workflow, then the newest run with a
-   green ✓ (currently:
-   `https://github.com/themythicalfox/Linux/actions/runs/27635265291`).
-3. Scroll to the **Artifacts** section at the bottom and click **`archonsync-iso`**.
-   It downloads a file called `archonsync-iso.zip`.
-4. **Double-click the `.zip`** in Finder — it unpacks into the actual
-   `ArchonSync-1.0-amd64.hybrid.iso` file. That `.iso` is what you'll use.
+1. Open the repo on GitHub. Click the green **`< > Code`** button → the
+   **Codespaces** tab → the **`…`** menu → **New with options…**
+2. Set **Branch** to `claude/linux-platform-coding-x4qkt9`.
+3. Set **Machine type** to **4-core (16 GB RAM)** or bigger — the build needs the
+   extra room and disk. Click **Create codespace**.
+4. It opens VS Code in your browser after a minute. (If you prefer the VS Code
+   app, click the **`…`** menu → **Open in VS Code Desktop** — it'll connect the
+   app to the same cloud machine.)
 
-### Step 2 — install VMware Fusion (free)
+### Step 2 — build the ISO
 
-1. Go to **https://www.vmware.com/products/fusion** (it's free for personal use;
-   you'll make a free Broadcom account to download it).
-2. Download **VMware Fusion (Pro)** for Mac, open the `.dmg`, and drag it to
-   Applications like any other app.
+1. In VS Code, open a terminal: top menu **Terminal → New Terminal**.
+2. Type this and press Enter:
+   ```sh
+   sudo make iso
+   ```
+3. Let it run — it takes about **30–40 minutes** and prints lots of progress
+   text. It's building the whole OS inside a container, so this is normal.
+4. When it finishes, a file named **`ArchonSync-1.0-amd64.hybrid.iso`** appears
+   in the file list on the left (about 3.8 GB).
 
-> Prefer something with no account sign-up? **VirtualBox**
-> (https://www.virtualbox.org → "OS X / Intel hosts") works too — the VM
-> settings below are the same. Use VirtualBox only on your **Intel** Mac.
+   > If it stops with a "no space left on device" error, the machine was too
+   > small — delete the Codespace and redo Step 1 with a **bigger machine type**.
 
-### Step 3 — create the VM and load the ISO
+### Step 3 — download the ISO to your Mac
+
+In the VS Code file list on the left, **right-click `ArchonSync-1.0-amd64.hybrid.iso`
+→ Download**. Save it to your **Downloads** folder. (It's ~3.8 GB, so give it a
+few minutes.)
+
+> When you're done building, **stop the Codespace** so it doesn't use up your
+> free hours: GitHub → your profile → **Codespaces** → `…` → **Stop**/**Delete**.
+
+### Step 4 — install VMware Fusion (free)
+
+1. Go to **https://www.vmware.com/products/fusion** — it's free for personal use
+   (you make a free Broadcom account to download).
+2. Download **VMware Fusion** for Mac, open the `.dmg`, drag it to Applications.
+
+> Don't want to make an account? **VirtualBox**
+> (https://www.virtualbox.org → "OS X / Intel hosts") works the same way on your
+> Intel Mac — the settings below are identical.
+
+### Step 5 — create the VM and load the ISO
 
 1. Open **VMware Fusion** → **File → New…**
 2. Choose **"Install from a disc or image"**, then **drag in the
-   `ArchonSync-1.0-amd64.hybrid.iso`** file → **Continue**.
-3. If it asks for the operating system, pick **Linux → Debian 12.x 64-bit** →
+   `ArchonSync-1.0-amd64.hybrid.iso`** → **Continue**.
+3. If asked for the operating system, pick **Linux → Debian 12.x 64-bit** →
    **Continue**.
 4. Click **Customize Settings**, save the VM, then set:
-   - **Processors & Memory:** 4 processor cores, **8 GB (8192 MB)** memory.
+   - **Processors & Memory:** 4 cores, **8 GB (8192 MB)**.
    - **Hard Disk:** 40 GB or more.
    - **Advanced → Firmware type: UEFI** (not Legacy BIOS). Leave **Secure Boot
      off**.
-   - **Display:** turn on **Accelerate 3D Graphics** for a smoother desktop.
+   - **Display:** turn on **Accelerate 3D Graphics**.
 
-### Step 4 — start it
+### Step 6 — start it and look around
 
-1. Click the **▶ (Play)** button to power on the VM.
-2. At the ArchonSync boot menu, choose **Live** to try the desktop without
-   changing anything. (You can also run the installer to install it *inside the
-   VM's virtual disk* — that's still completely separate from your real Mac.)
-3. Look around: the orange **Wheel** on the left edge launches apps, and the
-   **Control Center** has Settings, Task Manager, and the layout switcher.
+1. Click **▶ (Play)** to power on the VM.
+2. At the ArchonSync boot menu, choose **Live** (tries the desktop without
+   installing anything).
+3. **What to check** — is it all there and does it look right?
+   - The dark + orange login screen and desktop.
+   - The orange **Wheel** on the left edge — hover it, scroll, click an app.
+   - **Control Center** → open **Settings**, **Task Manager**, and try the
+     **layout switcher** (Wheel ↔ bottom taskbar ↔ top bar).
+   - Open a few apps: **Files**, **Terminal**, **Firefox**.
+   - Tell us anything that looks broken, ugly, or confusing.
 
 ### Good to know
 
-- A VM is great for seeing the desktop, the apps, and the design — but **games
-  run poorly inside a VM** (no real GPU). For actual gaming, ArchonSync needs to
-  be installed on a real PC.
-- If the VM won't boot, double-check **Firmware type = UEFI** in Step 3.
-- To shut down: just close the VM window and choose **Power Off**.
+- **Games and performance don't matter in the VM** (no real GPU) — this test is
+  only about the look and whether the menus/apps work.
+- If the VM won't boot, double-check **Firmware type = UEFI** in Step 5.
+- To shut down, close the VM window → **Power Off**.
 
 ## Running ArchonSync in a virtual machine (try it safely first)
 
