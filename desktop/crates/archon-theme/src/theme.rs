@@ -15,20 +15,15 @@ use crate::palette::Palette;
 use serde::{Deserialize, Serialize};
 
 /// How a widget blends with the wallpaper behind it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SurfaceMode {
     /// Solid, fully opaque panel.
     Opaque,
     /// Translucent frosted glass (background blur + low-alpha fill).
+    #[default]
     Glass,
     /// Tinted to match the wallpaper so the widget reads as part of it.
     WallpaperIntegrated,
-}
-
-impl Default for SurfaceMode {
-    fn default() -> Self {
-        SurfaceMode::Glass
-    }
 }
 
 /// A fully resolved color theme.

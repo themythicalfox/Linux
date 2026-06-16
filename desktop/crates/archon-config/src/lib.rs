@@ -17,23 +17,18 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 /// Which screen edge a panel/dock lives on.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Edge {
+    #[default]
     Left,
     Right,
     Bottom,
     Top,
 }
 
-impl Default for Edge {
-    fn default() -> Self {
-        Edge::Left
-    }
-}
-
 /// Top-level configuration document.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub general: General,
@@ -181,19 +176,6 @@ impl Default for Keybinds {
             prev_workspace: kb("Super+Left"),
             toggle_tiling: kb("Super+T"),
             fullscreen: kb("Super+F"),
-        }
-    }
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            general: General::default(),
-            lock: LockConfig::default(),
-            dock: DockConfig::default(),
-            theme: ThemeConfig::default(),
-            gaming: GamingConfig::default(),
-            keybinds: Keybinds::default(),
         }
     }
 }

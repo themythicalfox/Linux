@@ -10,9 +10,10 @@ members = [
     "crates/archon-config",
     "crates/archon-theme",
     "crates/archon-ipc",
+    "crates/archon-gaming",
+    "crates/archon-widgets",
     # The remaining crates are added to this list as they are implemented:
-    #   archon-gaming, archon-widgets, archon-ui, archon-lock,
-    #   archon-shell, archon-comp, archonctl
+    #   archon-ui, archon-lock, archon-shell, archon-comp, archonctl
 ]
 
 # Shared dependency versions and lints live here so every crate stays in lockstep.
