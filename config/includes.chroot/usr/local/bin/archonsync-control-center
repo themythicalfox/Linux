@@ -19,6 +19,7 @@ while :; do
         gamemode    "Toggle Game Mode" \
         adblock     "Toggle ad/tracker blocking" \
         windows     "Reboot into Windows" \
+        setup       "Run the setup wizard again" \
         2>/dev/null) || exit 0
 
     case "$CHOICE" in
@@ -42,5 +43,6 @@ while :; do
             fi
             ;;
         windows)   archonsync-windows ;;
+        setup)     rm -f "$HOME/.config/archonsync-setup.done"; launch archonsync-setup ;;
     esac
 done
