@@ -1,0 +1,37 @@
+#!/bin/sh
+# HDR + performance game launcher wrapper for ArchonSync.
+#
+# Paste this into a game's Steam launch options to get HDR, FSR upscaling,
+# Game Mode and the MangoHud overlay automatically:
+#
+#     archonsync-game-launch %command%
+#
+# or run any game/binary directly:
+#
+#     archonsync-game-launch /path/to/game
+#
+# It wraps the game in gamescope (isolated, HDR-capable session) + gamemoderun
+# (CPU/GPU performance) + mangohud (FPS overlay). Falls back gracefully if any
+# of those tools is missing.
+
+set -u
+
+[ $# -ge 1 ] || { echo "usage: archonsync-game-launch <command> [args...]" >&2; exit 1; }
+
+CMD="gamemoderun"
+command -v gamemoderun >/dev/null 2>&1 || CMD=""
+
+# gamescope: enable HDR + FSR. Output res follows the display; -f = fullscreen.
+GS=""
+if command -v gamescope >/dev/null 2>&1; then
+    GS="gamescope -f --hdr-enabled --mangoapp --fsr-upscaling"
+fi
+
+# If gamescope provides the overlay via --mangoapp, don't double up.
+HUD=""
+if [ -z "$GS" ] && command -v mangohud >/dev/null 2>&1; then
+    HUD="mangohud"
+fi
+
+# shellcheck disable=SC2086
+exec $GS $CMD $HUD "$@"

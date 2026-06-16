@@ -1,0 +1,13 @@
+[Unit]
+Description=ArchonSync QoS DSCP marking (prioritise games/voice/streams)
+After=nftables.service network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/nftables.d/archonsync-qos.nft
+ExecStop=/usr/sbin/nft delete table inet archonsync_qos
+
+[Install]
+WantedBy=multi-user.target

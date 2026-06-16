@@ -1,0 +1,23 @@
+# GPU support for all three vendors from one ISO.
+# NVIDIA proprietary lives in nvidia.list.chroot + the gaming hook (32-bit).
+# AMD (amdgpu) and Intel (i915) are driven entirely by Mesa: 64-bit here, and
+# 32-bit (for Proton/Wine) from the gaming hook, which is where i386 multiarch
+# gets enabled — package lists install too early for :i386 entries.
+# A first-boot detector (archonsync-gpu-detect) neutralises NVIDIA-only config
+# on machines that have no NVIDIA card.
+
+# Mesa OpenGL + Vulkan (64-bit).
+mesa-vulkan-drivers
+libgl1-mesa-dri
+libvulkan1
+vulkan-tools
+
+# Hardware video decode (smooth, low-CPU YouTube/Twitch/streams).
+mesa-va-drivers
+intel-media-va-driver-non-free
+va-driver-all
+vainfo
+
+# Diagnostics.
+mesa-utils
+clinfo

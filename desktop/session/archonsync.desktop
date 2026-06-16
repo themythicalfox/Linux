@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=ArchonSync
+Comment=ArchonSync Wayland desktop (gaming + creative)
+Exec=/usr/local/bin/archonsync-session
+Type=Application
+DesktopNames=ArchonSync
+Keywords=wayland;compositor;gaming;

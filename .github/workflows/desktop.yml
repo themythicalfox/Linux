@@ -1,0 +1,53 @@
+name: ArchonSync Desktop
+
+# Fast feedback for the Rust desktop: the full headless test suite plus the
+# GPU-renderer and Smithay-runtime feature builds. Runs on any change under
+# desktop/ (and on the workflow itself).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, claude/linux-platform-coding-x4qkt9]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dev libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libwayland-dev libinput-dev \
+            libudev-dev libseat-dev libgbm-dev libdrm-dev libegl1-mesa-dev \
+            libgles2-mesa-dev libxkbcommon-dev libpam0g-dev libdisplay-info-dev
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            desktop/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('desktop/**/Cargo.toml') }}
+
+      - name: Unit tests (headless core)
+        run: cargo test --workspace --verbose
+
+      - name: Clippy (deny warnings)
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: Build GPU renderer
+        run: cargo build -p archon-ui --features gpu
+
+      - name: Build Smithay runtime
+        run: cargo build -p archon-comp --features smithay-backend

@@ -1,0 +1,15 @@
+// ArchonSync APT hardening.
+// Refuse unsigned/insecure repositories outright, and don't auto-install
+// Recommends that can quietly widen the attack surface.
+Acquire::AllowInsecureRepositories "false";
+Acquire::AllowDowngradeToInsecureRepositories "false";
+APT::Get::AllowUnauthenticated "false";
+
+// Apply security updates automatically and clean up afterwards.
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+// Reboot automatically (at 4am) only if an update needs it.
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "04:00";

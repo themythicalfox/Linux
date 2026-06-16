@@ -1,12 +1,60 @@
 #!/bin/sh
-# Arm the security stack. `ufw enable` can't run in a chroot (no kernel
-# netfilter), so flip the config it would have written; the firewall
-# comes up with the boot service. Default policy: deny incoming,
-# allow outgoing.
+# Arm the ArchonSync maximum-lockdown security stack at build time.
+#
+# Anything that needs a running kernel / real hardware (ufw's netfilter rules,
+# USBGuard's device allow-list) is deferred to boot services — here we only
+# flip config and enable units. The matching runtime steps live in
+# archonsync-firstboot-security.
 
 set -e
 
+# ---- Firewall: deny incoming, allow outgoing, log, stealth -------------------
+# `ufw enable` can't run in a chroot, so flip the config it would have written;
+# the service brings the firewall up at boot.
 sed -i 's/^ENABLED=no/ENABLED=yes/' /etc/ufw/ufw.conf
+sed -i 's/^LOGLEVEL=.*/LOGLEVEL=low/' /etc/ufw/ufw.conf || true
+if [ -f /etc/default/ufw ]; then
+    sed -i 's/^DEFAULT_INPUT_POLICY=.*/DEFAULT_INPUT_POLICY="DROP"/' /etc/default/ufw
+    sed -i 's/^DEFAULT_FORWARD_POLICY=.*/DEFAULT_FORWARD_POLICY="DROP"/' /etc/default/ufw
+    sed -i 's/^IPV6=.*/IPV6=yes/' /etc/default/ufw
+fi
+
+# ---- Encrypted DNS: route /etc/resolv.conf through systemd-resolved ----------
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+# ---- Seed the DNS blocklist so trackers are blocked from first boot ----------
+HOSTS=/etc/hosts
+if [ -f /etc/archonsync/hosts.seed ] && ! grep -q "ARCHONSYNC-BLOCKLIST" "$HOSTS"; then
+    {
+        echo "# === ARCHONSYNC-BLOCKLIST BEGIN (managed; do not edit) ==="
+        echo "# seed list; replaced by archonsync-blocklist-update on first boot"
+        cat /etc/archonsync/hosts.seed
+        echo "# === ARCHONSYNC-BLOCKLIST END ==="
+    } >> "$HOSTS"
+fi
+
+# ---- Strong-password enforcement (pwquality) via PAM -------------------------
+# pwquality ships a "Default: yes" pam-config; pam-auth-update enables it
+# non-interactively. (faillock ships "Default: no" and stays off.)
+DEBIAN_FRONTEND=noninteractive pam-auth-update --package || true
+
+# ---- Enable the security services --------------------------------------------
 systemctl enable ufw.service
 systemctl enable apparmor.service
 systemctl enable unattended-upgrades.service
+systemctl enable systemd-resolved.service
+systemctl enable auditd.service
+systemctl enable chrony.service || true
+
+# Antivirus: signature updater + on-access daemon.
+systemctl enable clamav-freshclam.service || true
+systemctl enable clamav-daemon.service || true
+
+# ArchonSync scheduled jobs + first-boot setup.
+systemctl enable archonsync-blocklist.timer
+systemctl enable archonsync-antivirus.timer
+systemctl enable archonsync-firstboot-security.service
+
+# USBGuard is intentionally NOT enabled here — archonsync-firstboot-security
+# allow-lists your real devices first, then turns it on, so it can't lock you
+# out of the machine you installed from.

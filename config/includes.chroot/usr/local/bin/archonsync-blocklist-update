@@ -1,0 +1,89 @@
+#!/bin/sh
+# Refresh ArchonSync's DNS blocklist: ad networks, trackers, telemetry,
+# phishing and malware domains, all pointed at 0.0.0.0 so nothing on the system
+# (any browser, app or game) can reach them.
+#
+# The list is merged into /etc/hosts inside a clearly-marked, self-managed
+# section so it coexists with anything else in that file. Runs on first boot
+# and weekly via archonsync-blocklist.timer. Network is only needed here, never
+# at image-build time. If every source fails, the existing list is kept.
+
+set -eu
+
+HOSTS=/etc/hosts
+BEGIN="# === ARCHONSYNC-BLOCKLIST BEGIN (managed; do not edit) ==="
+END="# === ARCHONSYNC-BLOCKLIST END ==="
+SOURCES_FILE=/etc/archonsync/blocklist-sources.conf
+TMP="$(mktemp)"
+trap 'rm -f "$TMP" "$TMP.raw" "$TMP.new"' EXIT
+
+# Curated, well-maintained sources (ads + trackers + malware in one).
+DEFAULT_SOURCES="
+https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling/hosts
+https://urlhaus.abuse.ch/downloads/hostfile/
+"
+
+if [ -r "$SOURCES_FILE" ]; then
+    SOURCES="$(grep -vE '^\s*#' "$SOURCES_FILE" 2>/dev/null || true)"
+else
+    SOURCES="$DEFAULT_SOURCES"
+fi
+
+: > "$TMP.raw"
+got_any=0
+for url in $SOURCES; do
+    if curl -fsSL --max-time 60 "$url" >> "$TMP.raw" 2>/dev/null; then
+        got_any=1
+        echo "blocklist: fetched $url"
+    else
+        echo "blocklist: WARN could not fetch $url" >&2
+    fi
+done
+
+if [ "$got_any" -eq 0 ]; then
+    echo "blocklist: no sources reachable; keeping the current list." >&2
+    exit 0
+fi
+
+# Normalise to "0.0.0.0 <domain>": keep only 0.0.0.0/127.0.0.1 host lines,
+# strip comments/whitespace, drop localhost, dedupe, and rewrite the target.
+awk '
+    { sub(/#.*/, "") }                                  # strip inline comments
+    $1 == "0.0.0.0" || $1 == "127.0.0.1" {
+        d = $2
+        if (d == "" || d == "localhost" || d == "localhost.localdomain") next
+        if (d ~ /[^a-zA-Z0-9._-]/) next                 # reject junk/garbage
+        print "0.0.0.0 " d
+    }
+' "$TMP.raw" | sort -u > "$TMP.new"
+
+count="$(wc -l < "$TMP.new")"
+# Sanity gate: a real list has tens of thousands of entries. Refuse a truncated
+# or hijacked download rather than blowing away a good list.
+if [ "$count" -lt 1000 ]; then
+    echo "blocklist: only $count entries parsed — looks broken, keeping current list." >&2
+    exit 0
+fi
+
+# Rebuild /etc/hosts: everything outside our markers, then a fresh block.
+awk -v b="$BEGIN" -v e="$END" '
+    $0 == b { skip = 1; next }
+    $0 == e { skip = 0; next }
+    skip != 1 { print }
+' "$HOSTS" > "$TMP"
+
+{
+    cat "$TMP"
+    echo "$BEGIN"
+    echo "# $count domains, updated $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    cat "$TMP.new"
+    echo "$END"
+} > "$TMP.merged"
+
+install -m 0644 "$TMP.merged" "$HOSTS"
+rm -f "$TMP.merged"
+
+# Flush the resolver cache so blocks take effect immediately.
+resolvectl flush-caches 2>/dev/null || systemctl reload-or-restart systemd-resolved 2>/dev/null || true
+
+echo "blocklist: installed $count blocked domains."

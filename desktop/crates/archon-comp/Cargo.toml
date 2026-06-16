@@ -1,0 +1,43 @@
+[package]
+name = "archon-comp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The ArchonSync Wayland compositor: a pure, tested window-management core plus a Smithay-backed runtime."
+default-run = "archon-comp"
+
+[features]
+# The window-management core (layout, workspaces, keymap) always builds and is
+# fully headless-testable. The Smithay runtime is opt-in so the logic tests stay
+# fast; real desktop builds enable it. See README for the rationale.
+default = []
+smithay-backend = ["dep:smithay"]
+
+[dependencies]
+archon-config = { workspace = true }
+archon-theme = { workspace = true }
+archon-ipc = { workspace = true }
+archon-gaming = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+
+# Only the features the winit runtime needs are enabled. The bare-metal
+# DRM/udev backend (backend_drm/gbm/egl/libinput/udev/session_libseat) is added
+# back when run_udev() is built out; it pulls libdisplay-info and a much larger
+# system-library surface that the nested winit path doesn't require.
+smithay = { version = "0.7", optional = true, default-features = false, features = [
+    "backend_winit",
+    "renderer_gl",
+    "wayland_frontend",
+    "desktop",
+] }
+
+[lib]
+name = "archon_comp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "archon-comp"
+path = "src/main.rs"

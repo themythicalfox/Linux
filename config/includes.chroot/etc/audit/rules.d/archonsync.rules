@@ -1,0 +1,35 @@
+# ArchonSync audit rules — record tampering with the things attackers go for.
+# Kept deliberately lean so the log stays useful (not a flood).
+
+# Watch account & privilege files.
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/sudoers -p wa -k privilege
+-w /etc/sudoers.d/ -p wa -k privilege
+
+# Watch the security configuration itself.
+-w /etc/sysctl.conf -p wa -k sysctl
+-w /etc/sysctl.d/ -p wa -k sysctl
+-w /etc/modprobe.d/ -p wa -k modules
+-w /etc/pam.d/ -p wa -k pam
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/hosts -p wa -k hosts
+
+# Watch authentication logs and the cron/systemd persistence surface.
+-w /var/log/faillog -p wa -k logins
+-w /etc/crontab -p wa -k cron
+-w /etc/cron.d/ -p wa -k cron
+-w /etc/systemd/system/ -p wa -k systemd-units
+
+# Record kernel module load/unload (rootkit installation).
+-a always,exit -F arch=b64 -S init_module -S finit_module -S delete_module -k modules
+-a always,exit -F arch=b32 -S init_module -S finit_module -S delete_module -k modules
+
+# Record changes to the sudo time-stamp / privilege escalation attempts.
+-a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=4294967295 -k root-commands
+
+# Make the configuration immutable until the next reboot (a tamperer can't
+# quietly switch auditing off).
+-e 2

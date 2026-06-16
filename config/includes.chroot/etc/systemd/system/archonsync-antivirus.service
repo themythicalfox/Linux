@@ -1,0 +1,10 @@
+[Unit]
+Description=ArchonSync weekly malware + rootkit scan
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/archonsync-antivirus-scan
+Nice=15
+IOSchedulingClass=idle

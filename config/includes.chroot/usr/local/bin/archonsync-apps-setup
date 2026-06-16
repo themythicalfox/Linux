@@ -1,0 +1,56 @@
+#!/bin/sh
+# First-boot installer for the apps that aren't in Debian (or are best from
+# Flathub, sandboxed and always up to date): Discord, the game launchers, and
+# Proton-GE management. Needs network, so it runs at boot rather than during the
+# image build; if offline it leaves the stamp off and retries next boot.
+
+set -u
+STAMP=/var/lib/archonsync/.firstboot-apps-done
+mkdir -p /var/lib/archonsync
+[ -e "$STAMP" ] && exit 0
+
+log() { logger -t archonsync-apps "$*"; echo "archonsync-apps: $*"; }
+
+command -v flatpak >/dev/null 2>&1 || { log "flatpak missing; skipping."; exit 0; }
+
+# Need the network up to reach Flathub.
+if ! ping -c1 -W3 flathub.org >/dev/null 2>&1 && ! ping -c1 -W3 1.1.1.1 >/dev/null 2>&1; then
+    log "no network yet; will retry next boot."
+    exit 0
+fi
+
+# Add Flathub system-wide (idempotent).
+flatpak remote-add --if-not-exists flathub \
+    https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || {
+        log "could not add Flathub; will retry next boot."
+        exit 0
+    }
+
+# Curated app set. Each install is best-effort so one failure doesn't block the
+# rest; a partial run just gets completed on a later boot (stamp set only when
+# everything is present).
+APPS="
+com.discordapp.Discord
+org.prismlauncher.PrismLauncher
+com.heroicgameslauncher.hgl
+net.lutris.Lutris
+com.usebottles.bottles
+net.davidotek.pupgui2
+"
+
+all_ok=1
+for app in $APPS; do
+    if flatpak info "$app" >/dev/null 2>&1; then
+        continue
+    fi
+    log "installing $app ..."
+    if flatpak install -y --noninteractive flathub "$app" >/dev/null 2>&1; then
+        log "installed $app"
+    else
+        log "failed $app (will retry next boot)"
+        all_ok=0
+    fi
+done
+
+[ "$all_ok" -eq 1 ] && touch "$STAMP" && log "all apps installed."
+exit 0

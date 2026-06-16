@@ -1,0 +1,42 @@
+#!/bin/sh
+# Runtime-only security setup that can't happen during the image build.
+# Runs once, on the first boot of the installed (or live) system.
+
+set -u
+STAMP=/var/lib/archonsync/.firstboot-security-done
+mkdir -p /var/lib/archonsync
+[ -e "$STAMP" ] && exit 0
+
+log() { logger -t archonsync-security "$*"; echo "archonsync-security: $*"; }
+
+# --- AppArmor: put every profile into enforce mode --------------------------
+if command -v aa-enforce >/dev/null 2>&1; then
+    aa-enforce /etc/apparmor.d/* 2>/dev/null || true
+    log "AppArmor profiles set to enforce."
+fi
+
+# --- USBGuard: allow-list the devices present right now, THEN enforce --------
+# This is why USBGuard is enabled here and not in the build: we capture your
+# real keyboard/mouse first so enforcement can't lock you out.
+if command -v usbguard >/dev/null 2>&1; then
+    install -d -m 0750 /etc/usbguard
+    if usbguard generate-policy > /etc/usbguard/rules.conf 2>/dev/null; then
+        chmod 0600 /etc/usbguard/rules.conf
+        systemctl enable --now usbguard.service 2>/dev/null || true
+        log "USBGuard armed; current USB devices allow-listed."
+    else
+        log "USBGuard policy generation failed; leaving it disabled."
+    fi
+fi
+
+# --- Kick the first signature + blocklist updates (timers handle the rest) ---
+systemctl start archonsync-blocklist.service 2>/dev/null || true
+if command -v freshclam >/dev/null 2>&1; then
+    freshclam --quiet 2>/dev/null || true
+fi
+
+# --- Lock the root account (use sudo, never a root login) -------------------
+passwd -l root 2>/dev/null || true
+
+touch "$STAMP"
+log "first-boot security setup complete."

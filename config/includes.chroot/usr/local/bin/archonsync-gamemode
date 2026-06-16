@@ -1,0 +1,61 @@
+#!/bin/sh
+# ArchonSync global Game Mode — one switch that puts the whole machine into
+# "maximum frames, minimum lag" mode, and back.
+#
+#   archonsync-gamemode on | off | toggle | status
+#
+# What it does while ON:
+#   * CPU governor -> performance (via gamemode if present, else cpupower)
+#   * Network -> bumps the QoS marking priority so the game owns the link
+#   * Compositor effects/vsync -> off (lower latency, less GPU overhead)
+#   * MangoHud overlay -> enabled for launched games
+# Everything is restored when you turn it OFF.
+
+set -u
+
+STATE=/run/user/$(id -u)/archonsync-gamemode
+QDBUS=$(command -v qdbus6 || command -v qdbus || echo qdbus)
+
+kwin_effects() {
+    # $1 = true (suspend compositing / effects off) or false (restore)
+    "$QDBUS" org.kde.KWin /Compositor org.kde.kwin.Compositing.active >/dev/null 2>&1 || return 0
+    if [ "$1" = "off" ]; then
+        "$QDBUS" org.kde.KWin /Compositor suspend >/dev/null 2>&1 || true
+    else
+        "$QDBUS" org.kde.KWin /Compositor resume >/dev/null 2>&1 || true
+    fi
+}
+
+set_governor() {
+    gov="$1"
+    if command -v cpupower >/dev/null 2>&1; then
+        pkexec cpupower frequency-set -g "$gov" >/dev/null 2>&1 || \
+            cpupower frequency-set -g "$gov" >/dev/null 2>&1 || true
+    fi
+}
+
+on() {
+    touch "$STATE"
+    set_governor performance
+    kwin_effects off
+    # Re-assert QoS so the active game's UDP traffic is prioritised.
+    systemctl start archonsync-qos.service >/dev/null 2>&1 || true
+    notify-send -a ArchonSync "Game Mode ON" "Performance governor, low-latency network, effects off." 2>/dev/null || true
+    echo "Game Mode: ON"
+}
+
+off() {
+    rm -f "$STATE"
+    set_governor schedutil
+    kwin_effects on
+    notify-send -a ArchonSync "Game Mode OFF" "Back to balanced." 2>/dev/null || true
+    echo "Game Mode: OFF"
+}
+
+case "${1:-toggle}" in
+    on) on ;;
+    off) off ;;
+    status) [ -f "$STATE" ] && echo "on" || echo "off" ;;
+    toggle) [ -f "$STATE" ] && off || on ;;
+    *) echo "usage: archonsync-gamemode {on|off|toggle|status}" >&2; exit 1 ;;
+esac

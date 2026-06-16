@@ -1,0 +1,19 @@
+[package]
+name = "archon-lock"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "ArchonSync lock screen: the orange edge-swipe unlock gesture, particle feedback, and a PAM-backed password/PIN fallback."
+
+[features]
+# PAM auth needs libpam at link time and a real PAM stack at run time, so it is
+# opt-in; the swipe state machine and UI building are testable without it.
+default = []
+pam-auth = ["dep:pam"]
+
+[dependencies]
+archon-ui = { workspace = true }
+archon-theme = { workspace = true }
+archon-config = { workspace = true }
+pam = { version = "0.8", optional = true }

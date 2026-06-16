@@ -1,0 +1,11 @@
+[package]
+name = "archon-gaming"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Game launcher detection, per-game performance profiles and Game Mode orchestration for the ArchonSync desktop."
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }

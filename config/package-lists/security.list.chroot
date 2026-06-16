@@ -1,5 +1,39 @@
-# Security hardening stack.
+# ArchonSync maximum-lockdown security stack.
+
+# Firewall + mandatory access control.
 ufw
 apparmor
 apparmor-utils
+apparmor-profiles
+apparmor-profiles-extra
+
+# Automatic security updates.
 unattended-upgrades
+
+# Encrypted, malware-filtering DNS (DNS-over-TLS via systemd-resolved).
+systemd-resolved
+
+# Antivirus + rootkit detection (on-access daemon + scheduled deep scans).
+clamav
+clamav-daemon
+clamav-freshclam
+rkhunter
+
+# Application sandboxing (firejail bundles its app profiles).
+firejail
+
+# USB attack (BadUSB / rubber-ducky) protection.
+usbguard
+
+# Login hardening: strong-password enforcement + brute-force lockout module.
+libpam-pwquality
+
+# Audit / file-integrity + intrusion logging.
+auditd
+audispd-plugins
+
+# Desktop notifications for security events (used by the AV scanner).
+libnotify-bin
+
+# Secure, authenticated time so cert/expiry checks can't be spoofed.
+chrony

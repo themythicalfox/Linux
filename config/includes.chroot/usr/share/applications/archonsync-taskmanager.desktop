@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Task Manager
+Exec=plasma-systemmonitor
+Icon=utilities-system-monitor
+Comment=See what's running and how your CPU/GPU/RAM are doing
+Categories=System;Monitor;
+Terminal=false

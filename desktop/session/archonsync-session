@@ -1,0 +1,21 @@
+#!/bin/sh
+# ArchonSync session launcher (installed to /usr/local/bin).
+#
+# SDDM runs this for the "ArchonSync" Wayland session. It starts the compositor
+# on the DRM/udev backend and lets it bring up the shell. The shell and lock
+# screen are launched by the compositor itself once it is up, so this stays a
+# one-liner with the environment the desktop expects.
+
+# Wayland-native toolkits.
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=ArchonSync
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export SDL_VIDEODRIVER=wayland
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# NVIDIA: prefer explicit sync / GBM so the compositor gets a clean DRM path.
+export GBM_BACKEND=nvidia-drm
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+exec /usr/local/bin/archon-comp --backend udev

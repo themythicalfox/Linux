@@ -1,0 +1,12 @@
+[Unit]
+Description=ArchonSync first-boot security setup (USBGuard allow-list, AppArmor enforce)
+After=multi-user.target apparmor.service
+ConditionPathExists=!/var/lib/archonsync/.firstboot-security-done
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/archonsync-firstboot-security
+
+[Install]
+WantedBy=multi-user.target

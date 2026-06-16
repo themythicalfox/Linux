@@ -1,0 +1,20 @@
+#!/bin/sh
+# Enable the daily-driver desktop services added on top of the base image:
+# network QoS marking, and the first-boot GPU/app setup. (Runtime-only work —
+# applying CAKE per-interface, installing Flatpaks, detecting the GPU — happens
+# in those services at boot, not here in the chroot.)
+
+set -e
+
+# QoS DSCP marking so games/voice/streams beat bulk downloads.
+systemctl enable archonsync-qos.service || true
+
+# First-boot one-shots.
+systemctl enable archonsync-firstboot-gpu.service || true
+systemctl enable archonsync-firstboot-apps.service || true
+
+# Make sure the NetworkManager dispatcher (applies CAKE) can run.
+systemctl enable NetworkManager-dispatcher.service || true
+
+# Refresh the desktop database so the new ArchonSync launchers show up.
+update-desktop-database /usr/share/applications >/dev/null 2>&1 || true

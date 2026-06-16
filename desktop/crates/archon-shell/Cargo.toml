@@ -1,0 +1,21 @@
+[package]
+name = "archon-shell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "ArchonSync shell: the edge-activated dock and the radial control wheel, drawn as layer-shell surfaces."
+
+[dependencies]
+archon-ui = { workspace = true }
+archon-theme = { workspace = true }
+archon-config = { workspace = true }
+archon-ipc = { workspace = true }
+
+[lib]
+name = "archon_shell"
+path = "src/lib.rs"
+
+[[bin]]
+name = "archon-shell"
+path = "src/main.rs"

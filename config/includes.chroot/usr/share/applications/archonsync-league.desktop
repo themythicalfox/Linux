@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=League of Legends (Windows)
+Exec=archonsync-play-on-windows 'League of Legends'
+Icon=applications-games
+Comment=League uses anti-cheat that needs Windows — reboot to play, then back
+Categories=Game;
+Terminal=false

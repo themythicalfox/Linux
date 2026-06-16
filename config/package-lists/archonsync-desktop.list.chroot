@@ -1,0 +1,20 @@
+# Runtime dependencies for the ArchonSync Wayland compositor/desktop.
+# (KDE Plasma in desktop.list.chroot stays installed as a fallback session.)
+# The compositor and shell binaries themselves are staged into the image by
+# scripts/build-desktop.sh; these are the shared libraries and tools they need
+# at run time.
+seatd
+libinput10
+libxkbcommon0
+libgbm1
+libegl1
+libgles2
+libwayland-client0
+libwayland-server0
+libwayland-egl1
+fonts-noto
+fonts-noto-color-emoji
+foot
+gamemode
+mangohud
+xwayland

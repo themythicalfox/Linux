@@ -1,0 +1,28 @@
+#!/bin/sh
+# Reboot straight into Windows to play a game that can't run on Linux
+# (League of Legends and Valorant use Riot's Vanguard anti-cheat, which is
+# kernel-level and blocks Linux entirely — no Proton/Wine workaround exists).
+#
+# This is a one-shot reboot: Windows boots once, and the next restart returns to
+# ArchonSync automatically (GRUB_DEFAULT=saved + grub-reboot, same mechanism as
+# "Windows Mode"). Usage:  archonsync-play-on-windows "League of Legends"
+
+set -u
+GAME="${1:-this game}"
+
+MSG="$GAME needs Windows (its anti-cheat blocks Linux).
+
+ArchonSync will reboot into Windows now. When you're done, just restart and
+you'll come back to ArchonSync automatically.
+
+Reboot into Windows now?"
+
+if command -v kdialog >/dev/null 2>&1; then
+    kdialog --title "ArchonSync — Play on Windows" --warningyesno "$MSG" || exit 0
+else
+    printf '%s\n[y/N] ' "$MSG"
+    read -r ans
+    case "$ans" in y|Y) ;; *) exit 0 ;; esac
+fi
+
+exec /usr/local/bin/archonsync-windows

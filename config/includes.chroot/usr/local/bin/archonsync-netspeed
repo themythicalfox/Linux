@@ -1,0 +1,92 @@
+#!/bin/sh
+# archonsync-netspeed — pin the CAKE shaper to your real internet speed for the
+# lowest possible latency under load (no more ping spikes while downloading).
+#
+#   archonsync-netspeed <download_mbit> <upload_mbit>   set your line rate
+#   archonsync-netspeed auto                            measure, then set ~92%
+#   archonsync-netspeed clear                           back to unmanaged
+#   archonsync-netspeed status                          show current setting
+#
+# Tip: use about 90-95% of your *measured* speed (run a speed test). Too high
+# and bufferbloat creeps back; too low and you cap your throughput.
+
+set -eu
+
+CONF=/etc/archonsync/netspeed.conf
+
+need_root() {
+    if [ "$(id -u)" -ne 0 ]; then
+        exec pkexec "$0" "$@" 2>/dev/null || exec sudo "$0" "$@"
+    fi
+}
+
+active_iface() {
+    ip route show default 2>/dev/null | awk '/default/ {print $5; exit}'
+}
+
+apply_now() {
+    iface="$(active_iface)"
+    [ -n "$iface" ] || return 0
+    # Re-run the dispatcher logic by invoking it for the active interface.
+    if [ -x /etc/NetworkManager/dispatcher.d/50-archonsync-cake ]; then
+        /etc/NetworkManager/dispatcher.d/50-archonsync-cake "$iface" up || true
+    fi
+}
+
+write_conf() {
+    install -d -m 0755 "$(dirname "$CONF")"
+    cat > "$CONF" <<EOF
+# ArchonSync CAKE line-rate (Mbit/s). Managed by archonsync-netspeed.
+DOWN_MBIT=$1
+UP_MBIT=$2
+EOF
+}
+
+case "${1:-status}" in
+    status)
+        if [ -r "$CONF" ]; then cat "$CONF"; else echo "unmanaged (no line rate set)"; fi
+        iface="$(active_iface)"
+        [ -n "$iface" ] && { echo "active interface: $iface"; tc qdisc show dev "$iface" 2>/dev/null | grep -i cake || true; }
+        ;;
+    clear)
+        need_root clear
+        rm -f "$CONF"
+        apply_now
+        echo "Cleared — CAKE bandwidth is now unmanaged."
+        ;;
+    auto)
+        need_root auto
+        if ! command -v speedtest-cli >/dev/null 2>&1 && ! command -v speedtest >/dev/null 2>&1; then
+            echo "Install a speed tester first (e.g. 'sudo apt install speedtest-cli'), or pass the numbers:" >&2
+            echo "  archonsync-netspeed <download_mbit> <upload_mbit>" >&2
+            exit 1
+        fi
+        echo "Measuring (this takes ~30s)..."
+        if command -v speedtest-cli >/dev/null 2>&1; then
+            line=$(speedtest-cli --simple 2>/dev/null)
+            down=$(echo "$line" | awk '/Download/ {print $2}')
+            up=$(echo "$line" | awk '/Upload/ {print $2}')
+        else
+            down=$(speedtest -f json 2>/dev/null | sed 's/.*"download":{"bandwidth":\([0-9]*\).*/\1/' | awk '{print $1*8/1000000}')
+            up=$(speedtest -f json 2>/dev/null | sed 's/.*"upload":{"bandwidth":\([0-9]*\).*/\1/' | awk '{print $1*8/1000000}')
+        fi
+        [ -n "${down:-}" ] && [ -n "${up:-}" ] || { echo "Could not parse speed test output." >&2; exit 1; }
+        # Use 92% headroom.
+        down=$(awk -v d="$down" 'BEGIN{printf "%d", d*0.92}')
+        up=$(awk -v u="$up" 'BEGIN{printf "%d", u*0.92}')
+        write_conf "$down" "$up"
+        apply_now
+        echo "Set to ${down} Mbit down / ${up} Mbit up (92% of measured)."
+        ;;
+    *)
+        # Two numeric arguments: down up
+        down="${1:-}"; up="${2:-}"
+        case "$down$up" in
+            *[!0-9]*|"" ) echo "usage: archonsync-netspeed <download_mbit> <upload_mbit> | auto | clear | status" >&2; exit 1 ;;
+        esac
+        need_root "$down" "$up"
+        write_conf "$down" "$up"
+        apply_now
+        echo "Set CAKE to ${down} Mbit down / ${up} Mbit up. Lowest latency under load."
+        ;;
+esac

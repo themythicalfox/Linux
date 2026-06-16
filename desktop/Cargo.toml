@@ -1,0 +1,60 @@
+# ArchonSync Desktop — Cargo workspace.
+#
+# A Wayland-native desktop environment for the ArchonSync OS, written in Rust.
+# The compositor (archon-comp) is the privileged process; the shell, lock screen,
+# theming engine, widgets and gaming tooling are layered on top of it. See
+# README.md for the architecture overview and build instructions.
+[workspace]
+resolver = "2"
+members = [
+    "crates/archon-config",
+    "crates/archon-theme",
+    "crates/archon-ipc",
+    "crates/archon-gaming",
+    "crates/archon-widgets",
+    "crates/archon-ui",
+    "crates/archon-comp",
+    "crates/archonctl",
+    "crates/archon-lock",
+    "crates/archon-shell",
+]
+
+# Shared dependency versions and lints live here so every crate stays in lockstep.
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license = "GPL-3.0-or-later"
+authors = ["themythicalfox"]
+repository = "https://github.com/themythicalfox/Linux"
+
+[workspace.dependencies]
+# Cross-crate internal deps.
+archon-config = { path = "crates/archon-config" }
+archon-theme = { path = "crates/archon-theme" }
+archon-ipc = { path = "crates/archon-ipc" }
+archon-gaming = { path = "crates/archon-gaming" }
+archon-widgets = { path = "crates/archon-widgets" }
+archon-ui = { path = "crates/archon-ui" }
+archon-lock = { path = "crates/archon-lock" }
+
+# Common third-party deps, pinned once.
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+bincode = "1.3"
+anyhow = "1"
+thiserror = "1"
+log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+serde_json = "1"
+
+# Release builds: optimise hard. This is a latency-sensitive compositor, so we
+# trade compile time for a fast, slim binary.
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true

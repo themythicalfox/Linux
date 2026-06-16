@@ -1,0 +1,46 @@
+#!/bin/sh
+# ArchonSync Control Center — one hub that opens every system tool, the way
+# Windows' Settings or macOS' System Settings gather things in one place.
+# It's a themed menu that launches the (rebranded) best-in-class KDE apps plus
+# ArchonSync's own toggles.
+
+set -u
+
+launch() { setsid "$@" >/dev/null 2>&1 & }
+
+while :; do
+    CHOICE=$(kdialog --title "ArchonSync Control Center" --menu "What would you like to open?" \
+        settings    "Settings" \
+        tasks       "Task Manager (what's running)" \
+        hardware    "Hardware & sensors" \
+        terminal    "Terminal" \
+        network     "Network settings" \
+        layout      "Switch desktop layout" \
+        gamemode    "Toggle Game Mode" \
+        adblock     "Toggle ad/tracker blocking" \
+        windows     "Reboot into Windows" \
+        2>/dev/null) || exit 0
+
+    case "$CHOICE" in
+        settings)  launch systemsettings ;;
+        tasks)     launch plasma-systemmonitor ;;
+        hardware)  launch kinfocenter ;;
+        terminal)  launch konsole ;;
+        network)   launch systemsettings kcm_networkmanagement ;;
+        layout)
+            L=$(kdialog --title "Desktop layout" --menu "Pick a layout:" \
+                wheel "Side dial (the Wheel)" \
+                taskbar "Bottom taskbar (Windows-style)" \
+                topbar "Top bar (macOS-style)" 2>/dev/null) && archonsync-layout "$L"
+            ;;
+        gamemode)  archonsync-gamemode toggle ;;
+        adblock)
+            if [ "$(archonsync-adblock status)" = "on" ]; then
+                archonsync-adblock off
+            else
+                archonsync-adblock on
+            fi
+            ;;
+        windows)   archonsync-windows ;;
+    esac
+done

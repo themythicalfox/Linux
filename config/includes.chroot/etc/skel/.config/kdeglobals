@@ -3,7 +3,7 @@ ColorScheme=ArchonSyncDark
 AccentColor=255,122,26
 
 [Icons]
-Theme=breeze-dark
+Theme=Papirus-Dark
 
 [KDE]
 LookAndFeelPackage=org.kde.breezedark.desktop

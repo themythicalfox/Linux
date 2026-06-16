@@ -1,0 +1,28 @@
+# The "Windows-familiar" app stack + the unified Control Center pieces.
+# These are mature KDE apps, rebranded as ArchonSync via .desktop overrides.
+
+# Settings, Task Manager (live CPU/GPU/RAM/net graphs), Hardware info.
+systemsettings
+plasma-systemmonitor
+kinfocenter
+kde-cli-tools
+
+# Command-line system monitors for power users.
+btop
+nvtop
+lm-sensors
+
+# Flatpak + the Discover backend, so the first-boot app installer can pull
+# Discord, Prism Launcher, Heroic, Lutris, Bottles and ProtonUp-Qt from Flathub.
+flatpak
+plasma-discover
+plasma-discover-backend-flatpak
+
+# Clean, consistent iconography.
+papirus-icon-theme
+
+# Friendly dialogs used by the Control Center / welcome scripts.
+kdialog
+
+# CPU governor control for Game Mode.
+linux-cpupower
