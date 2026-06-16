@@ -71,6 +71,16 @@ it with `archonsync-game-launch %command%` (uses `gamescope --hdr-enabled`).
 ## Network tips
 
 The connection is tuned for low latency and high throughput out of the box
-(BBR + CAKE + QoS). If you know your exact line speed, you can squeeze out the
-last of the bufferbloat by setting CAKE's bandwidth — ask in the repo issues and
-we'll add a simple `archonsync-netspeed <down> <up>` helper.
+(BBR + CAKE + QoS). To squeeze out the last of the bufferbloat, tell CAKE your
+real line rate so it can hold ping flat even at full download:
+
+```sh
+# Run a speed test first, then set ~90-95% of the measured numbers (Mbit/s):
+archonsync-netspeed 470 22        # 470 Mbit down, 22 Mbit up
+archonsync-netspeed auto          # measure + set automatically (needs speedtest-cli)
+archonsync-netspeed status        # show the current setting
+archonsync-netspeed clear         # back to unmanaged
+```
+
+The setting persists across reboots and reconnects.
+
