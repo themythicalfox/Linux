@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Hardware
+Exec=kinfocenter
+Icon=hwinfo
+Comment=View your hardware and how it's running
+Categories=System;
+Terminal=false

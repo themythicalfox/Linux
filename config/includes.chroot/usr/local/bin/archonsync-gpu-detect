@@ -1,0 +1,47 @@
+#!/bin/sh
+# First-boot GPU auto-detection so one ISO works on NVIDIA, AMD and Intel.
+#
+# NVIDIA proprietary + Mesa both ship in the image. On an NVIDIA machine we keep
+# NVIDIA and make sure DRM modeset is on (required for Wayland + HDR). On an AMD
+# or Intel machine we neutralise NVIDIA-only bits so the in-kernel amdgpu/i915 +
+# Mesa stack drives the display cleanly.
+
+set -u
+STAMP=/var/lib/archonsync/.firstboot-gpu-done
+mkdir -p /var/lib/archonsync
+[ -e "$STAMP" ] && exit 0
+
+log() { logger -t archonsync-gpu "$*"; echo "archonsync-gpu: $*"; }
+
+VENDORS=$(lspci -nn 2>/dev/null | grep -Ei 'vga|3d|display' || true)
+
+has_nvidia=0; has_amd=0; has_intel=0
+echo "$VENDORS" | grep -qi nvidia && has_nvidia=1
+echo "$VENDORS" | grep -Eqi 'amd|ati|advanced micro' && has_amd=1
+echo "$VENDORS" | grep -qi intel && has_intel=1
+log "GPUs: nvidia=$has_nvidia amd=$has_amd intel=$has_intel"
+
+if [ "$has_nvidia" -eq 1 ]; then
+    # Ensure NVIDIA DRM modeset (Wayland/HDR need it).
+    echo "options nvidia-drm modeset=1 fbdev=1" > /etc/modprobe.d/archonsync-nvidia.conf
+    log "NVIDIA present: DRM modeset enabled."
+else
+    # No NVIDIA card: keep its modules from getting in the way of amdgpu/i915.
+    cat > /etc/modprobe.d/archonsync-nvidia.conf <<'MOD'
+# No NVIDIA GPU detected on first boot — keep the NVIDIA modules out of the way
+# so the in-kernel AMD/Intel drivers own the display.
+blacklist nvidia
+blacklist nvidia_drm
+blacklist nvidia_modeset
+blacklist nvidia_uvm
+MOD
+    # Drop any NVIDIA Xorg snippet that would force the wrong driver.
+    rm -f /etc/X11/xorg.conf.d/*nvidia* 2>/dev/null || true
+    log "No NVIDIA: relying on Mesa (amdgpu/i915)."
+fi
+
+# Regenerate the initramfs so the modprobe choice takes effect next boot.
+update-initramfs -u >/dev/null 2>&1 || true
+
+touch "$STAMP"
+log "GPU detection complete."

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Settings
+Exec=systemsettings
+Icon=preferences-system
+Comment=System settings
+Categories=Settings;
+Terminal=false

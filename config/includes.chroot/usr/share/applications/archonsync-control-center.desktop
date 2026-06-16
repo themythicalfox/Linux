@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Control Center
+Exec=archonsync-control-center
+Icon=preferences-system
+Comment=One place for settings, tasks, hardware, layout, Game Mode and more
+Categories=System;Settings;
+Terminal=false

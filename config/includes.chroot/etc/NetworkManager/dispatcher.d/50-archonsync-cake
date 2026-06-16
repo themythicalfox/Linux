@@ -1,0 +1,34 @@
+#!/bin/sh
+# Put the CAKE queue discipline on the active uplink whenever a connection
+# comes up. CAKE removes "bufferbloat" — the lag spike you get when a download
+# saturates the link — in BOTH directions (egress directly, ingress via an IFB
+# mirror), and its diffserv mode honours the DSCP marks set by
+# archonsync-qos.nft so games/voice/streams stay smooth while downloads run.
+#
+# NetworkManager calls this as: <script> <interface> <action>
+
+IFACE="$1"
+ACTION="$2"
+
+[ "$ACTION" = "up" ] || exit 0
+# Skip loopback and virtual interfaces.
+case "$IFACE" in
+    lo|veth*|docker*|virbr*|vnet*|tun*|tap*|ifb*) exit 0 ;;
+esac
+
+command -v tc >/dev/null 2>&1 || exit 0
+
+# Egress shaping (upload direction).
+tc qdisc replace dev "$IFACE" root cake diffserv4 2>/dev/null || true
+
+# Ingress shaping (download direction) via an IFB mirror device.
+modprobe ifb 2>/dev/null || true
+IFB="ifb-arch"
+ip link add "$IFB" type ifb 2>/dev/null || true
+ip link set "$IFB" up 2>/dev/null || true
+tc qdisc replace dev "$IFACE" handle ffff: ingress 2>/dev/null || true
+tc filter replace dev "$IFACE" parent ffff: protocol all matchall \
+    action mirred egress redirect dev "$IFB" 2>/dev/null || true
+tc qdisc replace dev "$IFB" root cake diffserv4 2>/dev/null || true
+
+exit 0

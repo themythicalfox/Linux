@@ -1,0 +1,15 @@
+[Unit]
+Description=ArchonSync first-boot app installer (Discord, launchers via Flathub)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/archonsync/.firstboot-apps-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/archonsync-apps-setup
+# Retry on a timer is handled by re-running at each boot until the stamp is set.
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target

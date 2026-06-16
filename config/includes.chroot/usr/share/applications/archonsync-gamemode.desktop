@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Game Mode
+Exec=archonsync-gamemode toggle
+Icon=applications-games
+Comment=Toggle maximum-performance, low-latency Game Mode
+Categories=Game;System;
+Terminal=false

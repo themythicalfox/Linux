@@ -1,0 +1,38 @@
+#!/bin/sh
+# Switch the ArchonSync desktop layout at runtime.
+#   archonsync-layout wheel     # side dial (default)
+#   archonsync-layout taskbar   # Windows-style bottom task bar
+#   archonsync-layout topbar    # macOS-style top bar + dock
+#
+# Each layout is a Plasma script in /usr/share/archonsync/ applied through
+# plasmashell's scripting API. The choice is remembered so it survives logout.
+
+set -eu
+
+CHOICE="${1:-}"
+SHARE=/usr/share/archonsync
+STATE="$HOME/.config/archonsync-layout"
+
+case "$CHOICE" in
+    wheel|taskbar|topbar) ;;
+    "")
+        # No argument: print the current layout.
+        [ -f "$STATE" ] && cat "$STATE" || echo "wheel"
+        exit 0
+        ;;
+    *)
+        echo "usage: archonsync-layout {wheel|taskbar|topbar}" >&2
+        exit 1
+        ;;
+esac
+
+SCRIPT="$SHARE/layout-$CHOICE.js"
+[ -f "$SCRIPT" ] || { echo "layout script not found: $SCRIPT" >&2; exit 1; }
+
+QDBUS=$(command -v qdbus6 || command -v qdbus || echo qdbus)
+"$QDBUS" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+    "$(cat "$SCRIPT")"
+
+mkdir -p "$(dirname "$STATE")"
+echo "$CHOICE" > "$STATE"
+echo "ArchonSync layout switched to: $CHOICE"

@@ -1,0 +1,12 @@
+[Unit]
+Description=ArchonSync first-boot GPU auto-detection (NVIDIA/AMD/Intel)
+After=multi-user.target
+ConditionPathExists=!/var/lib/archonsync/.firstboot-gpu-done
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/archonsync-gpu-detect
+
+[Install]
+WantedBy=multi-user.target

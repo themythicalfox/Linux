@@ -11,10 +11,15 @@ Ships as a hybrid BIOS/UEFI live ISO with a graphical installer.
 ## What's inside
 
 **Gaming**
-- Steam (with 32-bit libraries and NVIDIA 32-bit GL/Vulkan for Proton)
-- Wine 10 (64-bit + 32-bit) for Windows apps
-- GameMode and MangoHud
-- NVIDIA proprietary driver, prebuilt for the shipped kernel
+- Steam (32-bit libraries + Proton) for your whole Steam library
+- Minecraft via Prism Launcher; Discord, both installed on first boot
+- Wine 10 + Winetricks + Bottles + Lutris for non-Steam Windows games/apps
+- gamescope (HDR + FSR upscaling), GameMode, MangoHud, GOverlay
+- **Runs on any GPU** — NVIDIA proprietary *and* Mesa for AMD/Intel ship in one
+  ISO; a first-boot detector picks the right one automatically
+- **League of Legends / Valorant** use Riot's kernel anti-cheat (Vanguard),
+  which blocks Linux entirely — a one-click "Play on Windows" shortcut reboots
+  you into Windows for those, then back (see [GAMING.md](GAMING.md))
 
 **Creation**
 - Blender
@@ -24,13 +29,28 @@ Ships as a hybrid BIOS/UEFI live ISO with a graphical installer.
   license doesn't allow shipping the engine itself in an ISO
 - Git, build-essential, Vulkan tools
 
-**Design**
-- ArchonSync Dark color scheme and wallpaper, dark SDDM login, themed
-  lock screen
-- The Wheel launcher (custom Plasma widget): hover the orange dot on the
-  left edge, scroll to rotate through apps/commands, click to launch.
-  Edit the entries in the widget settings (JSON list of name/icon/cmd).
-- Minimal top bar with clock and system tray — no taskbar clutter
+**Design & desktop**
+- ArchonSync Dark color scheme, `#ff7a1a` accent, Papirus icons, dark SDDM
+  login and themed lock screen — on KDE Plasma 6 (Wayland, for HDR)
+- **Switchable layouts**, one click in the Control Center:
+  - **Side dial** — the Wheel (default): hover the orange dot on the left edge,
+    scroll to rotate, click to launch
+  - **Bottom taskbar** — Windows-style, familiar for friends switching over
+  - **Top bar** — macOS-style slim menu bar + floating dock
+- **ArchonSync Control Center** gathers everything in one place — Settings,
+  Task Manager (live CPU/GPU/RAM graphs), Hardware info, Terminal, network,
+  Game Mode, ad-block toggle, layout switch — the mature KDE apps, rebranded
+- A first-login welcome orients anyone coming from Windows
+
+**Performance & network**
+- High-RAM workstation tuning (swappiness, `vm.max_map_count`, inotify limits)
+- **BBR + fair-queue + CAKE**: high download speeds *and* low latency — a big
+  download won't spike your ping. **QoS prioritises real-time traffic** (games,
+  Discord voice, streaming) so your foreground "steals" the connection from
+  background transfers
+- **Game Mode** (one toggle): performance CPU governor, network priority bump,
+  compositor effects off — maximum frames, minimum lag
+- **HDR** via KDE on Wayland; per-game HDR with `archonsync-game-launch`
 
 **Windows Mode** (dual-boot)
 - "Windows Mode" on the Wheel reboots straight into your installed
@@ -44,11 +64,6 @@ Ships as a hybrid BIOS/UEFI live ISO with a graphical installer.
 - Setup warns you if Windows Fast Startup or BitLocker is blocking
   drive access (with fix instructions). For full read-write access,
   turn off Fast Startup in Windows once.
-
-**Performance**
-- Tuned for a high-RAM workstation: low swappiness, SteamOS-grade
-  `vm.max_map_count`, high inotify limits for IDEs/engines
-- power-profiles-daemon for one-click performance mode
 
 **Security (maximum lockdown)**
 

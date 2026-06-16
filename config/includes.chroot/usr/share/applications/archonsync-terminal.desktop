@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Terminal
+Exec=konsole
+Icon=utilities-terminal
+Comment=Command line
+Categories=System;TerminalEmulator;
+Terminal=false

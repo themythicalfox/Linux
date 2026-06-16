@@ -17,6 +17,13 @@
       "ProviderURL": "https://dns.quad9.net/dns-query",
       "Locked": false
     },
+    "ExtensionSettings": {
+      "_comment": "Force-install uBlock Origin for browser-level ad/tracker blocking on top of the system-wide DNS blocklist.",
+      "uBlock0@raymondhill.net": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
+      }
+    },
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
     "DisablePocket": true,

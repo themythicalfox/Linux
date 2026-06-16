@@ -1,0 +1,66 @@
+#!/bin/sh
+# Turn the system-wide ad/tracker/malware blocker on or off.
+#   archonsync-adblock on | off | status | update
+#
+# The blocklist lives in /etc/hosts between the ARCHONSYNC-BLOCKLIST markers
+# (managed by archonsync-blocklist-update). "off" comments the entries out so
+# nothing is blocked; "on" restores them. Browser-level blocking (uBlock Origin
+# in Firefox) is separate and always on.
+
+set -eu
+
+HOSTS=/etc/hosts
+BEGIN="# === ARCHONSYNC-BLOCKLIST BEGIN"
+END="# === ARCHONSYNC-BLOCKLIST END"
+
+need_root() {
+    if [ "$(id -u)" -ne 0 ]; then
+        exec pkexec "$0" "$@" 2>/dev/null || exec sudo "$0" "$@"
+    fi
+}
+
+status() {
+    if grep -q "^0\.0\.0\.0" "$HOSTS" 2>/dev/null; then
+        echo "on"
+    else
+        echo "off"
+    fi
+}
+
+case "${1:-status}" in
+    status)
+        status
+        ;;
+    on)
+        need_root on
+        # Uncomment lines we previously disabled inside the block.
+        awk -v b="$BEGIN" -v e="$END" '
+            index($0,b)==1 {inblk=1; print; next}
+            index($0,e)==1 {inblk=0; print; next}
+            inblk==1 { sub(/^#DISABLED /, ""); print; next }
+            { print }
+        ' "$HOSTS" > "$HOSTS.tmp" && mv "$HOSTS.tmp" "$HOSTS"
+        resolvectl flush-caches 2>/dev/null || true
+        echo "Ad/tracker blocking: ON"
+        ;;
+    off)
+        need_root off
+        # Comment out every blocked-host line inside the block.
+        awk -v b="$BEGIN" -v e="$END" '
+            index($0,b)==1 {inblk=1; print; next}
+            index($0,e)==1 {inblk=0; print; next}
+            inblk==1 && /^0\.0\.0\.0/ { print "#DISABLED " $0; next }
+            { print }
+        ' "$HOSTS" > "$HOSTS.tmp" && mv "$HOSTS.tmp" "$HOSTS"
+        resolvectl flush-caches 2>/dev/null || true
+        echo "Ad/tracker blocking: OFF"
+        ;;
+    update)
+        need_root update
+        exec /usr/local/bin/archonsync-blocklist-update
+        ;;
+    *)
+        echo "usage: archonsync-adblock {on|off|status|update}" >&2
+        exit 1
+        ;;
+esac

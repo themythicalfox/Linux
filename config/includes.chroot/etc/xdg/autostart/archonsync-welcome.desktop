@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Welcome
+Exec=archonsync-welcome
+Icon=help-about
+Comment=First-login welcome and tips
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;

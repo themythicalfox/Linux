@@ -1,0 +1,44 @@
+#!/bin/sh
+# Friendly first-login welcome — orients someone coming from Windows and points
+# out the ArchonSync-specific bits. Shown once per user.
+
+set -u
+STAMP="$HOME/.config/archonsync-welcome.done"
+[ -f "$STAMP" ] && exit 0
+
+TEXT="Welcome to ArchonSync — your PC, faster and locked down.
+
+DESKTOP LAYOUT
+  Switch between the side Wheel, a Windows-style bottom taskbar, or a macOS-style
+  top bar anytime:  Control Center -> Switch desktop layout.
+
+YOUR APPS
+  • Settings, Task Manager, Hardware, Terminal — all in the Control Center.
+  • Steam games: install Steam, enable Proton (Settings -> Compatibility).
+  • Minecraft: open Prism Launcher. Discord is installed too.
+  • Other Windows programs: use Bottles or Lutris.
+
+GAMING
+  • Game Mode (Control Center) = max performance + low-latency network.
+  • For HDR / best performance, add to a game's Steam launch options:
+        archonsync-game-launch %command%
+
+LEAGUE OF LEGENDS / VALORANT
+  These use Riot's anti-cheat, which does NOT work on Linux. Use the
+  'Play on Windows' shortcut to reboot into Windows for them (one restart later
+  you're back in ArchonSync).
+
+SECURITY & ADS
+  Ad/tracker/malware blocking is ON system-wide. Toggle it in the Control
+  Center. The firewall, antivirus and encrypted DNS are already running.
+
+Have fun!"
+
+if command -v kdialog >/dev/null 2>&1; then
+    kdialog --title "Welcome to ArchonSync" --msgbox "$TEXT" 2>/dev/null || true
+else
+    printf '%s\n' "$TEXT"
+fi
+
+mkdir -p "$(dirname "$STAMP")"
+touch "$STAMP"

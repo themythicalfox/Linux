@@ -1,0 +1,22 @@
+#!/usr/sbin/nft -f
+# ArchonSync QoS DSCP marking (loaded by archonsync-qos.service, independent of
+# the ufw firewall). Real-time traffic — games, Discord voice, and modern
+# streaming (YouTube/Twitch over QUIC) are all UDP — is marked Expedited
+# Forwarding so the CAKE scheduler lets it jump ahead of bulk TCP downloads
+# and OS updates. Ping is marked network-control for a steady, low latency.
+
+table inet archonsync_qos {}
+delete table inet archonsync_qos
+table inet archonsync_qos {
+    chain mark_out {
+        type filter hook output priority mangle; policy accept;
+
+        # IPv4
+        ip protocol icmp ip dscp set cs6
+        ip protocol udp ip dscp set ef
+
+        # IPv6
+        ip6 nexthdr icmpv6 ip6 dscp set cs6
+        ip6 nexthdr udp ip6 dscp set ef
+    }
+}
