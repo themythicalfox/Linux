@@ -1,0 +1,21 @@
+[package]
+name = "archon-ui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Shared UI toolkit for ArchonSync surfaces: spring/easing animation, a particle system, a backend-agnostic draw list, and an optional wgpu renderer."
+
+[features]
+# The pure core (animation, particles, draw list) is always built and is fully
+# headless-testable. The GPU renderer is opt-in so CI and the logic tests stay
+# fast and dependency-light; real desktop builds enable it.
+default = []
+gpu = ["dep:wgpu", "dep:raw-window-handle", "dep:bytemuck", "dep:pollster"]
+
+[dependencies]
+archon-theme = { workspace = true }
+wgpu = { version = "29", optional = true }
+raw-window-handle = { version = "0.6", optional = true }
+bytemuck = { version = "1", features = ["derive"], optional = true }
+pollster = { version = "0.4", optional = true }
