@@ -1,0 +1,11 @@
+# Guest tools so ArchonSync behaves well inside virtual machines (display
+# sizing, clipboard, smoother graphics). Harmless on real hardware — each one's
+# service only activates under its matching hypervisor.
+# VMware (incl. Fusion on Intel Macs):
+open-vm-tools-desktop
+xserver-xorg-video-vmware
+# QEMU/KVM + Spice:
+spice-vdagent
+qemu-guest-agent
+# VirtualBox:
+virtualbox-guest-x11
