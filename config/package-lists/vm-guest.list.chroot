@@ -7,5 +7,5 @@ xserver-xorg-video-vmware
 # QEMU/KVM + Spice:
 spice-vdagent
 qemu-guest-agent
-# VirtualBox:
-virtualbox-guest-x11
+# (VirtualBox users install Guest Additions from the VirtualBox "Devices" menu;
+# Debian trixie has no separate guest-x11 package to ship here.)
