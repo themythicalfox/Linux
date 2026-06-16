@@ -1,0 +1,13 @@
+#!/bin/sh
+# Make the live ISO boot straight to the desktop by enabling SDDM autologin for
+# the live user. The systemd unit gates this to the live session
+# (ConditionKernelCommandLine=boot=live), so an installed system never runs it
+# and keeps a normal login screen.
+set -e
+mkdir -p /etc/sddm.conf.d
+cat > /etc/sddm.conf.d/zz-archonsync-live-autologin.conf <<'CONF'
+[Autologin]
+User=archon
+Session=plasma.desktop
+Relogin=false
+CONF
