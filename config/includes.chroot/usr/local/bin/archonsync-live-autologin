@@ -3,11 +3,16 @@
 # the live user. The systemd unit gates this to the live session
 # (ConditionKernelCommandLine=boot=live), so an installed system never runs it
 # and keeps a normal login screen.
+#
+# The live session uses Plasma on X11, not Wayland: KWin's Wayland session
+# black-screens in VMs (VMware/VirtualBox) and on GPUs whose driver isn't ready
+# yet at live boot, whereas X11 works everywhere. HDR/Wayland is a choice the
+# user makes after installing (pick "Plasma (Wayland)" at the login screen).
 set -e
 mkdir -p /etc/sddm.conf.d
 cat > /etc/sddm.conf.d/zz-archonsync-live-autologin.conf <<'CONF'
 [Autologin]
 User=archon
-Session=plasma.desktop
+Session=plasmax11.desktop
 Relogin=false
 CONF

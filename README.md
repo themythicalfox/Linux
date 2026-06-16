@@ -227,6 +227,12 @@ few minutes.)
 - **Games and performance don't matter in the VM** (no real GPU) — this test is
   only about the look and whether the menus/apps work.
 - If the VM won't boot, double-check **Firmware type = UEFI** in Step 5.
+- **If the screen goes black right after you log in**, the VM tried to start the
+  Wayland session, which VMs don't handle. Restart the VM, and at the login
+  screen click the session selector at the **bottom-left** ("Desktop Session:
+  Plasma (Wayland)") and switch it to **Plasma (X11)**, then log in. (Newer
+  builds of the ISO already default to X11 in VMs, so this only affects older
+  ISOs.) Also make sure **Accelerate 3D Graphics** is on (Step 5).
 - To shut down, close the VM window → **Power Off**.
 
 ## Running ArchonSync in a virtual machine (try it safely first)
