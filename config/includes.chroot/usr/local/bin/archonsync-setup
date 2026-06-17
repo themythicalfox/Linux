@@ -39,9 +39,9 @@ in the Control Center. Click OK to begin." || { touch "$STAMP"; exit 0; }
 LAYOUT=$(step 2 --radiolist "How do you want your desktop to look?
 
 (You can switch anytime in the Control Center.)" \
-    wheel   "Side dial — the Wheel (ArchonSync signature)" on \
-    taskbar "Bottom taskbar — familiar, Windows-style" off \
-    topbar  "Top bar — clean, macOS-style" off 2>/dev/null) || LAYOUT=""
+    taskbar "Bottom taskbar — familiar, Windows-style" on \
+    topbar  "Top bar — clean, macOS-style" off \
+    wheel   "Side dial — the Wheel (signature; experimental)" off 2>/dev/null) || LAYOUT=""
 [ -n "$LAYOUT" ] && archonsync-layout "$LAYOUT" >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------------------

@@ -20,14 +20,20 @@ Relogin=false
 CONF
 
 # In a virtual machine, the virtual GPU's OpenGL is often missing or too limited
-# for KWin to composite, which shows up as a completely black screen right after
-# login. Force llvmpipe software rendering so the desktop always draws (slower,
-# but this is just a "try it" session). pam_env reads /etc/environment for the
-# SDDM-started session, so the whole Plasma session inherits these.
+# for KWin to composite, which shows up as a black screen or freeze right after
+# login. Force software rendering so the desktop always draws (slower, but this
+# is just a "try it" session):
+#   LIBGL_ALWAYS_SOFTWARE  -> KWin composites on llvmpipe (software OpenGL)
+#   QT_QUICK_BACKEND       -> plasmashell/KWin QML render via the software
+#                             scene graph (no GPU scene-graph at all)
+# We deliberately DON'T set KWIN_COMPOSE=Q: that forces KWin's QPainter backend,
+# which is X11-only (it freezes Wayland) and is itself crash-prone in VMs.
+# pam_env reads /etc/environment for the SDDM-started session, so the whole
+# Plasma session inherits these.
 if systemd-detect-virt --quiet 2>/dev/null; then
     {
         echo "LIBGL_ALWAYS_SOFTWARE=1"
+        echo "QT_QUICK_BACKEND=software"
         echo "WLR_RENDERER_ALLOW_SOFTWARE=1"
-        echo "KWIN_COMPOSE=Q"
     } >> /etc/environment
 fi
