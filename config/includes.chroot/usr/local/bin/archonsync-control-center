@@ -15,6 +15,7 @@ while :; do
         hardware    "Hardware & sensors" \
         terminal    "Terminal" \
         network     "Network settings" \
+        accounts    "Connect accounts (Google, Microsoft...)" \
         layout      "Switch desktop layout" \
         gamemode    "Toggle Game Mode" \
         adblock     "Toggle ad/tracker blocking" \
@@ -28,6 +29,7 @@ while :; do
         hardware)  launch kinfocenter ;;
         terminal)  launch konsole ;;
         network)   launch systemsettings kcm_networkmanagement ;;
+        accounts)  if command -v kcmshell6 >/dev/null 2>&1; then launch kcmshell6 kcm_kaccounts; else launch systemsettings kcm_kaccounts; fi ;;
         layout)
             L=$(kdialog --title "Desktop layout" --menu "Pick a layout:" \
                 wheel "Side dial (the Wheel)" \

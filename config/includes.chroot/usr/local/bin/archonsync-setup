@@ -1,42 +1,78 @@
 #!/bin/sh
 # ArchonSync first-boot setup wizard (OOBE).
 #
-# Runs once per user on first login and walks them through the choices that
-# matter on ArchonSync: desktop layout, apps & accounts, Windows dual-boot,
-# privacy, and network. Every step is optional and best-effort — cancelling or
-# an error never blocks finishing. Stamp-guarded so it only runs once.
+# Runs once per user on first login and walks them through setting up their
+# ArchonSync profile, their desktop, connecting their accounts, Windows
+# dual-boot, privacy and network. Every step is optional and best-effort;
+# cancelling or an error never blocks finishing. Stamp-guarded.
 #
-# Built on kdialog (always installed) so it ships with no compile step. A
-# fancier branded window can replace this later without changing the flow.
+# The "ArchonSync account" is a LOCAL profile (stored on this PC) — there is no
+# cloud service. "Connect your accounts" does real per-app sign-in: Google /
+# Microsoft via KDE Online Accounts, and one-click launches for Discord, Steam
+# and Firefox.
+#
+# Built on kdialog (always installed) so it ships with no compile step.
 
 set -u
 
 STAMP="$HOME/.config/archonsync-setup.done"
 [ -f "$STAMP" ] && exit 0
 
-# If kdialog isn't available for some reason, fall back to the simple welcome.
 if ! command -v kdialog >/dev/null 2>&1; then
     [ -x /usr/local/bin/archonsync-welcome ] && /usr/local/bin/archonsync-welcome
     exit 0
 fi
 
 TITLE="ArchonSync Setup"
-TOTAL=6
+TOTAL=7
+PROFILE_DIR="$HOME/.config/archonsync"
+PROFILE="$PROFILE_DIR/profile.conf"
 launch() { setsid "$@" >/dev/null 2>&1 & }
 step()   { kdialog --title "$TITLE — step $1 of $TOTAL" "$@"; }
+has()    { echo "$1" | grep -q "$2"; }
 
 # ---------------------------------------------------------------------------
 # 1. Welcome
 # ---------------------------------------------------------------------------
 step 1 --msgbox "Welcome to ArchonSync — your PC, faster, cleaner and locked down.
 
-Let's make it yours with a few quick choices. You can change any of these later
-in the Control Center. Click OK to begin." || { touch "$STAMP"; exit 0; }
+Let's get you set up: your profile, your desktop, and your accounts. It only
+takes a minute, and you can change any of it later in the Control Center." \
+    || { touch "$STAMP"; exit 0; }
 
 # ---------------------------------------------------------------------------
-# 2. Desktop layout
+# 2. Your ArchonSync profile (local — stays on this PC)
 # ---------------------------------------------------------------------------
-LAYOUT=$(step 2 --radiolist "How do you want your desktop to look?
+CUR_NAME=$(getent passwd "$USER" 2>/dev/null | cut -d: -f5 | cut -d, -f1)
+NAME=$(step 2 --inputbox "Set up your ArchonSync profile.
+
+What should we call you?" "${CUR_NAME:-}" 2>/dev/null) || NAME="${CUR_NAME:-}"
+
+USECASE=$(step 2 --radiolist "What will you mostly use this PC for?" \
+    gaming   "Gaming"                         on  \
+    creating "Creating (art, code, video)"    off \
+    both     "A bit of both"                  off 2>/dev/null) || USECASE="both"
+
+if step 2 --yesno "Want to set a profile picture?"; then
+    PIC=$(kdialog --title "$TITLE" --getopenfilename "$HOME" "image/jpeg image/png" 2>/dev/null) || PIC=""
+    if [ -n "$PIC" ] && [ -f "$PIC" ]; then
+        cp -f "$PIC" "$HOME/.face.icon" 2>/dev/null || true
+        cp -f "$PIC" "$HOME/.face" 2>/dev/null || true
+    fi
+fi
+
+mkdir -p "$PROFILE_DIR"
+cat > "$PROFILE" <<EOF
+# ArchonSync local profile (this stays on your computer).
+NAME=$NAME
+USECASE=$USECASE
+CREATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+
+# ---------------------------------------------------------------------------
+# 3. Desktop layout
+# ---------------------------------------------------------------------------
+LAYOUT=$(step 3 --radiolist "How do you want your desktop to look?
 
 (You can switch anytime in the Control Center.)" \
     taskbar "Bottom taskbar — familiar, Windows-style" on \
@@ -45,50 +81,62 @@ LAYOUT=$(step 2 --radiolist "How do you want your desktop to look?
 [ -n "$LAYOUT" ] && archonsync-layout "$LAYOUT" >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------------------
-# 3. Apps & accounts
+# 4. Connect your accounts (after your ArchonSync profile is made)
 # ---------------------------------------------------------------------------
-step 3 --msgbox "Your apps are being set up in the background:
+SEL=$(step 4 --checklist "Connect your accounts now? Sign in and your stuff comes
+with you (it all syncs with Windows too — same accounts, same data).
 
-  • Steam — your whole game library (Proton for Windows games)
-  • Discord, Minecraft (Prism Launcher), and game launchers
-  • Firefox with ad/tracker blocking built in
+You can connect any of these later from the Control Center." \
+    online   "Google / Microsoft (Drive, calendar, mail)" on  \
+    discord  "Discord"                                     on  \
+    steam    "Steam (your games)"                          on  \
+    firefox  "Firefox (bookmarks & passwords sync)"        off 2>/dev/null) || SEL=""
 
-Sign into each with your normal account and everything syncs with Windows —
-say something on Discord here, it's there on Windows too." || true
-
-if command -v steam >/dev/null 2>&1; then
-    if step 3 --yesno "Open Steam now to sign in?"; then
-        launch steam
+if has "$SEL" online; then
+    # KDE Online Accounts: real Google/Microsoft/Nextcloud sign-in.
+    if command -v kcmshell6 >/dev/null 2>&1; then
+        launch kcmshell6 kcm_kaccounts
+    else
+        launch systemsettings kcm_kaccounts
     fi
 fi
+if has "$SEL" discord; then
+    if flatpak info com.discordapp.Discord >/dev/null 2>&1; then
+        launch flatpak run com.discordapp.Discord
+    elif command -v discord >/dev/null 2>&1; then
+        launch discord
+    fi
+fi
+if has "$SEL" steam && command -v steam >/dev/null 2>&1; then
+    launch steam
+fi
+if has "$SEL" firefox && command -v firefox >/dev/null 2>&1; then
+    launch firefox "https://accounts.firefox.com/"
+fi
 
 # ---------------------------------------------------------------------------
-# 4. Windows dual-boot (only if a Windows drive is present)
+# 5. Windows dual-boot (only if a Windows drive is present)
 # ---------------------------------------------------------------------------
-has_windows=0
 if [ -d /windows/Windows ] || lsblk -no FSTYPE 2>/dev/null | grep -qi ntfs; then
-    has_windows=1
-fi
-if [ "$has_windows" -eq 1 ]; then
-    step 4 --msgbox "Windows was found on this PC — you're set up for dual-boot.
+    step 5 --msgbox "Windows was found on this PC — you're set up for dual-boot.
 
   • 'Windows Mode' (Control Center or the Wheel) reboots straight into Windows;
     the next restart brings you back to ArchonSync.
-  • Your Windows files are available here under your home folder, so it's the
-    same files on both systems.
+  • Your Windows files are available here in your home folder — same files on
+    both systems.
   • League of Legends / Valorant need Windows (their anti-cheat blocks Linux) —
     use the 'Play on Windows' shortcut for those." || true
 else
-    step 4 --msgbox "No second OS detected — ArchonSync has the whole drive.
+    step 5 --msgbox "No second OS detected — ArchonSync has the whole drive.
 
 If you add Windows later for games like League of Legends (which need Windows),
 ArchonSync will pick it up for one-click dual-boot." || true
 fi
 
 # ---------------------------------------------------------------------------
-# 5. Privacy & security (already on — just confirm/allow opt-out)
+# 6. Privacy & security
 # ---------------------------------------------------------------------------
-if step 5 --yesno "ArchonSync is already locked down and ad-free:
+if step 6 --yesno "ArchonSync is already locked down and ad-free:
 
   • System-wide ad / tracker / malware blocking
   • Firewall, antivirus, encrypted DNS, automatic security updates
@@ -100,17 +148,17 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 6. Network tuning (optional)
+# 7. Network tuning (optional)
 # ---------------------------------------------------------------------------
 if command -v speedtest-cli >/dev/null 2>&1 || command -v speedtest >/dev/null 2>&1; then
-    if step 6 --yesno "Your connection is already tuned for low lag and high speed.
+    if step 7 --yesno "Your connection is already tuned for low lag and high speed.
 
 Pin it to your exact line speed for the lowest possible ping under load? (runs a
 quick ~30s speed test)"; then
         ( archonsync-netspeed auto >/dev/null 2>&1 || true ) &
     fi
 else
-    step 6 --msgbox "Your connection is tuned for low lag and high speed out of the box
+    step 7 --msgbox "Your connection is tuned for low lag and high speed out of the box
 (BBR + CAKE + traffic prioritisation for games, Discord and streaming).
 
 To pin it to your exact line speed later, open a terminal and run:
@@ -120,13 +168,13 @@ fi
 # ---------------------------------------------------------------------------
 # Done
 # ---------------------------------------------------------------------------
-kdialog --title "$TITLE — all set!" --msgbox "You're ready to go!
+kdialog --title "$TITLE — all set!" --msgbox "You're ready to go${NAME:+, $NAME}!
 
-  • The Control Center has Settings, Task Manager, Hardware and every toggle.
+  • The Control Center has Settings, Task Manager, Hardware, your accounts and
+    every toggle.
   • Game Mode = max performance + low-latency network, one click.
   • Switch desktop layouts anytime in the Control Center.
 
 Welcome to ArchonSync." || true
 
-mkdir -p "$(dirname "$STAMP")"
 touch "$STAMP"
