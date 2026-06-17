@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ArchonSync Collect Logs
+Exec=archonsync-collect-logs
+Icon=text-x-generic
+Comment=Save desktop session diagnostics to the Desktop
+Categories=System;
+Terminal=false

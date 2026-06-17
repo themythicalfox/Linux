@@ -1,0 +1,38 @@
+#!/bin/sh
+# Collect the logs that explain why a desktop session failed (e.g. the KDE
+# black screen) into one easy-to-find file on the Desktop, so it can be read or
+# photographed without digging. Run this from a working session (e.g. XFCE)
+# after a failed login attempt in the SAME boot.
+
+set -u
+OUT="$HOME/Desktop/archonsync-logs.txt"
+mkdir -p "$HOME/Desktop"
+
+{
+    echo "########## ArchonSync session diagnostics ##########"
+    echo "date: $(date)"
+    echo "virt: $(systemd-detect-virt 2>/dev/null)"
+    echo
+
+    echo "===== GL / renderer ====="
+    glxinfo 2>/dev/null | grep -iE "opengl (vendor|renderer|version)|direct rendering" || echo "(glxinfo unavailable)"
+    echo
+
+    echo "===== KWin / Plasma / SDDM (this boot) ====="
+    journalctl -b --no-pager 2>/dev/null \
+        | grep -iE "kwin|plasmashell|startplasma|sddm|drm|opengl|egl|llvmpipe|segfault|core-dump|fatal|assert" \
+        | tail -250 || echo "(journal unavailable)"
+    echo
+
+    echo "===== SDDM per-session logs ====="
+    for f in "$HOME"/.local/share/sddm/xorg-session.log "$HOME"/.local/share/sddm/wayland-session.log; do
+        [ -f "$f" ] && { echo "--- $f ---"; cat "$f"; }
+    done
+    echo
+
+    echo "===== ~/.xsession-errors ====="
+    [ -f "$HOME/.xsession-errors" ] && cat "$HOME/.xsession-errors"
+} > "$OUT" 2>&1
+
+echo "Saved diagnostics to $OUT"
+command -v kdialog >/dev/null 2>&1 && kdialog --msgbox "Saved to:\n$OUT\n\nOpen it and send a photo to help fix the desktop." 2>/dev/null || true

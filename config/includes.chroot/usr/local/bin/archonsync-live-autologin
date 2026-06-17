@@ -9,27 +9,31 @@ set -e
 
 mkdir -p /etc/sddm.conf.d
 
-# Autologin the live user into Plasma on X11. KWin's Wayland session black-
-# screens in VMs and on GPUs whose driver isn't ready at live boot; X11 works
-# everywhere. (HDR/Wayland is a choice the user makes after installing.)
-cat > /etc/sddm.conf.d/zz-archonsync-live-autologin.conf <<'CONF'
+# Which session to autologin into. KDE Plasma 6 / KWin black-screens in some VMs
+# (it needs GPU compositing the virtual GPU can't provide). The lightweight XFCE
+# session renders fine with plain software graphics, so the live ISO autologins
+# into XFCE inside a VM to guarantee a usable desktop; on real hardware it boots
+# the full ArchonSync Plasma desktop. KDE is selectable from the login screen in
+# either case.
+SESSION="plasmax11.desktop"
+if systemd-detect-virt --quiet 2>/dev/null; then
+    SESSION="xfce.desktop"
+fi
+
+cat > /etc/sddm.conf.d/zz-archonsync-live-autologin.conf <<CONF
 [Autologin]
 User=archon
-Session=plasmax11.desktop
+Session=$SESSION
 Relogin=false
 CONF
 
 # In a virtual machine, the virtual GPU's OpenGL is often missing or too limited
-# for KWin to composite, which shows up as a black screen or freeze right after
-# login. Force software rendering so the desktop always draws (slower, but this
-# is just a "try it" session):
-#   LIBGL_ALWAYS_SOFTWARE  -> KWin composites on llvmpipe (software OpenGL)
-#   QT_QUICK_BACKEND       -> plasmashell/KWin QML render via the software
-#                             scene graph (no GPU scene-graph at all)
-# We deliberately DON'T set KWIN_COMPOSE=Q: that forces KWin's QPainter backend,
-# which is X11-only (it freezes Wayland) and is itself crash-prone in VMs.
-# pam_env reads /etc/environment for the SDDM-started session, so the whole
-# Plasma session inherits these.
+# to composite, which shows up as a black screen or freeze right after login.
+# Force software rendering so the desktop always draws (slower, but this is just
+# a "try it" session):
+#   LIBGL_ALWAYS_SOFTWARE  -> compositing on llvmpipe (software OpenGL)
+#   QT_QUICK_BACKEND       -> Qt/QML render via the software scene graph
+# pam_env reads /etc/environment for the SDDM-started session.
 if systemd-detect-virt --quiet 2>/dev/null; then
     {
         echo "LIBGL_ALWAYS_SOFTWARE=1"

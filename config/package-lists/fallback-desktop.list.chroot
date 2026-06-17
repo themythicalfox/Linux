@@ -1,0 +1,12 @@
+# Lightweight fallback desktop (XFCE). KDE Plasma 6 / KWin can black-screen in
+# some VMs (no GPU compositing); XFCE renders fine with plain software graphics,
+# so the live ISO can always reach a usable desktop. KDE Plasma stays the
+# primary desktop and is selectable at the login screen.
+xfce4-session
+xfwm4
+xfce4-panel
+xfdesktop4
+xfce4-settings
+xfce4-terminal
+xfce4-appfinder
+thunar
