@@ -24,5 +24,12 @@ papirus-icon-theme
 # Friendly dialogs used by the Control Center / welcome scripts.
 kdialog
 
+# KDE Online Accounts — real Google / Microsoft / Nextcloud sign-in so the
+# first-boot "connect your accounts" step gives you Drive, calendar and mail
+# inside ArchonSync (kio-gdrive surfaces Google Drive in the file manager).
+kaccounts-integration
+kaccounts-providers
+kio-gdrive
+
 # CPU governor control for Game Mode.
 linux-cpupower

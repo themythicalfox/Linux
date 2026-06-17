@@ -16,5 +16,9 @@ systemctl enable archonsync-firstboot-apps.service || true
 # Make sure the NetworkManager dispatcher (applies CAKE) can run.
 systemctl enable NetworkManager-dispatcher.service || true
 
+# Live ISO: autologin straight to the desktop (gated to boot=live, so installed
+# systems keep a normal login screen).
+systemctl enable archonsync-live-autologin.service || true
+
 # Refresh the desktop database so the new ArchonSync launchers show up.
 update-desktop-database /usr/share/applications >/dev/null 2>&1 || true

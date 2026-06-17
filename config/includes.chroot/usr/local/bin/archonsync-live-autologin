@@ -1,0 +1,39 @@
+#!/bin/sh
+# Make the live ISO boot straight to the desktop by enabling SDDM autologin for
+# the live user, and make the desktop actually render inside virtual machines.
+#
+# Gated to the live session by the systemd unit
+# (ConditionKernelCommandLine=boot=live), so an installed system never runs this
+# and keeps a normal login screen on its real GPU.
+set -e
+
+mkdir -p /etc/sddm.conf.d
+
+# Autologin the live user into Plasma on X11. KWin's Wayland session black-
+# screens in VMs and on GPUs whose driver isn't ready at live boot; X11 works
+# everywhere. (HDR/Wayland is a choice the user makes after installing.)
+cat > /etc/sddm.conf.d/zz-archonsync-live-autologin.conf <<'CONF'
+[Autologin]
+User=archon
+Session=plasmax11.desktop
+Relogin=false
+CONF
+
+# In a virtual machine, the virtual GPU's OpenGL is often missing or too limited
+# for KWin to composite, which shows up as a black screen or freeze right after
+# login. Force software rendering so the desktop always draws (slower, but this
+# is just a "try it" session):
+#   LIBGL_ALWAYS_SOFTWARE  -> KWin composites on llvmpipe (software OpenGL)
+#   QT_QUICK_BACKEND       -> plasmashell/KWin QML render via the software
+#                             scene graph (no GPU scene-graph at all)
+# We deliberately DON'T set KWIN_COMPOSE=Q: that forces KWin's QPainter backend,
+# which is X11-only (it freezes Wayland) and is itself crash-prone in VMs.
+# pam_env reads /etc/environment for the SDDM-started session, so the whole
+# Plasma session inherits these.
+if systemd-detect-virt --quiet 2>/dev/null; then
+    {
+        echo "LIBGL_ALWAYS_SOFTWARE=1"
+        echo "QT_QUICK_BACKEND=software"
+        echo "WLR_RENDERER_ALLOW_SOFTWARE=1"
+    } >> /etc/environment
+fi

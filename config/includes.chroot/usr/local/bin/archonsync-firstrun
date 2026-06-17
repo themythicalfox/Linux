@@ -13,7 +13,6 @@ STAMP="$HOME/.config/archonsync-firstrun.done"
 [ -f "$STAMP" ] && exit 0
 
 WALL=/usr/share/wallpapers/ArchonSync/contents/images/3840x2160.png
-LAYOUT=/usr/share/archonsync/layout.js
 
 # Plasma 6 ships qdbus6; older systems have qdbus.
 QDBUS=$(command -v qdbus6 || command -v qdbus || echo qdbus)
@@ -28,13 +27,14 @@ while [ $i -lt 30 ]; do
     sleep 1
 done
 
+# Apply the look with Plasma's own tools (safe, can't crash the session).
 plasma-apply-colorscheme ArchonSyncDark >/dev/null 2>&1 || true
 plasma-apply-wallpaperimage "$WALL" >/dev/null 2>&1 || true
 
-if [ -f "$LAYOUT" ]; then
-    "$QDBUS" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
-        "$(cat "$LAYOUT")" >/dev/null 2>&1 || true
-fi
+# NOTE: we intentionally do NOT auto-apply a custom panel layout here. Plasma's
+# stock default panel always comes up cleanly; the ArchonSync layouts (Wheel /
+# taskbar / top bar) are applied on demand from the setup wizard and the Control
+# Center (archonsync-layout), so a custom plasmoid can never block first login.
 
 mkdir -p "$(dirname "$STAMP")"
 touch "$STAMP"

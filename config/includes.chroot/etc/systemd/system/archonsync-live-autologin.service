@@ -1,0 +1,14 @@
+[Unit]
+Description=ArchonSync live-session autologin (live ISO only)
+# Only on the live image — installed systems don't have boot=live and so skip
+# this entirely, keeping their normal login screen.
+ConditionKernelCommandLine=boot=live
+Before=display-manager.service sddm.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/archonsync-live-autologin
+
+[Install]
+WantedBy=multi-user.target
